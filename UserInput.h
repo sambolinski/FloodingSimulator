@@ -4,9 +4,14 @@
 #include "Graphics/Camera.h"
 class UserInput{
 public:
+    bool m_FirstMouse = true;
+    double m_LastX;
+    double m_LastY;
     GLFWwindow *m_Window;
+
     UserInput(){}
     UserInput(GLFWwindow *window) :m_Window(window){}
     void processInput(Camera &camera);
+    void processMouseInput(double xpos, double ypos);
 };
 #endif //!USERINPUT_H

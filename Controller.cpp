@@ -1,50 +1,85 @@
 #include "Controller.h"
 #include <iostream>
+#include <fstream>
+#include <string>
+
+void Simulation::World::loadWorld() {
+    m_OtherRenderedObjects.push_back(m_Ocean);
+    loadShip();
+}
 void Simulation::World::loadShip() {
-    for (int i = 0; i < 10; i++) {
-        Node node;
-        m_Ship.push_back(node);
+    const unsigned int LAYER_HEIGHT = 50;
+    const unsigned int LAYER_WEIGHT = 50;
+    std::string line;
+    std::ifstream shipFile;
+    shipFile.open("Ships/ship.txt");
+    unsigned int xLayer = 0;
+    unsigned int yLayer = 0;
+    unsigned int zLayer = 0;
+    glm::vec4 colour;
+    if (shipFile.is_open()) {
+        while(getline(shipFile, line)){
+            for (char& c : line) {
+                if (c == '-') {
+                    yLayer = -1;
+                    zLayer++;
+                }
+                if (c!='0' && c!= ' ') {
+                    if (c == 'S') {
+                        colour = glm::vec4(0.310f + ((float)xLayer)/50, 0.318f, 0.329f, 1.0f);
+                    } else if (c == 'A') {
+                        colour = glm::vec4(0.839f, 0.839f, 0.839f, 1.0f);
+                    }
+                    if (c != '-') {
+                        Node node;
+                        node.m_Object.m_Colour = colour;
+                        node.m_Position = glm::vec3(yLayer, zLayer, xLayer);
+                        m_Ship.push_back(node);
+                    }
+                }
+                xLayer++;
+            }
+            xLayer = 0;
+            yLayer++;
+        }
+        std::cout << m_Ship.size();
+    } else {
+        std::cout << "FILE NOT OPEN\n";
     }
-    m_Ship.at(0).m_Position = glm::vec3(0.0f, 0.0f, 0.0f);
-    m_Ship.at(1).m_Position = glm::vec3(2.0f, 5.0f, -15.0f);
-    m_Ship.at(2).m_Position = glm::vec3(-1.5f, -2.2f, -2.5f);
-    m_Ship.at(3).m_Position = glm::vec3(-3.8f, -2.0f, -12.3f);
-    m_Ship.at(4).m_Position = glm::vec3(2.4f, -0.4f, -3.5f);
-    m_Ship.at(5).m_Position = glm::vec3(-1.7f, 3.0f, -7.5f);
-    m_Ship.at(6).m_Position = glm::vec3(1.3f, -2.0f, -2.5f);
-    m_Ship.at(7).m_Position = glm::vec3(1.5f, 2.0f, -2.5f);
-    m_Ship.at(8).m_Position = glm::vec3(1.5f, 0.2f, -1.5f);
-    m_Ship.at(9).m_Position = glm::vec3(-1.3f, 1.0f, -1.5f);
 }
 
-Simulation::Controller::Controller(UserInput &userInput) {
-    m_UserInput = userInput;
-    m_World.loadShip();
+Simulation::Controller::Controller(Camera &camera) {
+    m_Renderer.setCamera(camera);
+    m_World.loadWorld();
     m_Renderer.initialiseSceneRender();
 }
 
 void Simulation::Controller::update() {
     float currentTime = glfwGetTime();
-    std::cout << "currentTime: " << currentTime << "\n";
     m_DeltaTime = currentTime - m_LastTime;
-    std::cout << "deltaTime: " << m_DeltaTime << "\n";
-    std::cout << "-------------------------" << "\n";
     m_LastTime = currentTime;
-    m_Renderer.m_Camera.updateCameraSpeed(m_DeltaTime);
-    updatePhysics();
-    updateUserInput();
+    m_Renderer.m_Camera->updateCameraSpeed(m_DeltaTime);
     updateGraphics();
 }
 
 void Simulation::Controller::updatePhysics() {
-
+    typedef std::vector<PhysicsObject>::iterator iter;
+    for (iter i = m_World.m_Ship.begin(); i < m_World.m_Ship.end() && i->m_PhysicsEnabled; i++) {
+        glm::vec3 newPosition = i->m_Position + (i->m_Velocity * m_DeltaTime) + (i->m_Acceleration)*(m_DeltaTime*m_DeltaTime*0.5f);
+        glm::vec3 newAcceleration = m_World.m_GravityAcceleration;
+        glm::vec3 newVelocity = i->m_Velocity + (i->m_Acceleration + newAcceleration)*(m_DeltaTime*0.5f);
+        i->m_Position = newPosition;
+        i->m_Velocity = newVelocity;
+        i->m_Acceleration = newAcceleration;
+    }
 }
 
-void Simulation::Controller::updateUserInput() {
-    m_UserInput.processInput(m_Renderer.m_Camera);
+glm::vec3 Simulation::Controller::applyForce() {
+    return glm::vec3(0, 0, 0);
 }
 
 void Simulation::Controller::updateGraphics() {
     m_Renderer.clear();
+    m_Renderer.render(m_World.m_OtherRenderedObjects);
     m_Renderer.render(m_World.m_Ship);
 }

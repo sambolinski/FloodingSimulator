@@ -5,16 +5,18 @@
 
 class PhysicsObject {
 public:
-    //static unsigned int s_ID;
     std::string m_Type;
-    std::vector<float> m_Vertices;
-    std::vector<unsigned int> m_Indices;
     Object m_Object;
     glm::vec3 m_Position;
+    glm::vec3 m_Velocity; 
+    glm::vec3 m_Acceleration; 
+    glm::vec3 m_Scale;
+    bool m_PhysicsEnabled = true;
     PhysicsObject() {
-        //s_ID++;
+        m_Scale = glm::vec3(1.0f, 1.0f, 1.0f);
+        m_Velocity = glm::vec3(0, 0, 0);
+        m_Acceleration = glm::vec3(0, 0, 0);
     }
 };
-//unsigned int PhysicsObject::s_ID = 0;
 #endif // !PHYSICSOBJECT_H
 
