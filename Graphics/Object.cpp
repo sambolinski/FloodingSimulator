@@ -15,7 +15,11 @@ void Object::render(Shader &shader) {
     m_VertexBufferObject.bind();
     m_VertexArrayObject.bind(); 
     m_ElementBufferObject.bind();
-    glDrawElements(GL_TRIANGLES, m_Indices.size(), GL_UNSIGNED_INT, 0);
+    if (m_Mode == 2) {
+        glDrawElements(GL_LINES, m_Indices.size(), GL_UNSIGNED_INT, 0);
+    } else if (m_Mode == 3) {
+        glDrawElements(GL_TRIANGLES, m_Indices.size(), GL_UNSIGNED_INT, 0);
+    }
     m_VertexBufferObject.unbind();
     m_VertexArrayObject.unbind();
     m_ElementBufferObject.unbind();

@@ -11,8 +11,10 @@ public:
     VertexBufferObject m_VertexBufferObject;
     VertexArrayObject m_VertexArrayObject;
     ElementBufferObject m_ElementBufferObject;
+    unsigned int m_Mode;
     const char *m_VertexShaderSource;
     const char *m_FragmentShaderSource;
+    const char *m_GeometryShaderSource;
     glm::vec4 m_Colour;
 
     Object() {}

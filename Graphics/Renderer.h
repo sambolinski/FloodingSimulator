@@ -7,6 +7,8 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <vector>
+#include <map>
+#include <string>
 class Renderer {
 public:
     bool firstMouse = true;
@@ -17,8 +19,9 @@ public:
 
     Renderer();
     void initialiseSceneRender();
-    void render(std::vector<PhysicsObject> &physicsObjects);
+    void render(std::map<std::string, PhysicsObjects::PhysicsObject> &physicsObjects);
     void clear();
+    void renderSprings(std::map<std::string, PhysicsObjects::PhysicsSpring> &springs);
     Camera getCamera() { return *m_Camera; }
     void setCamera(Camera &camera) {
         m_Camera = &camera;

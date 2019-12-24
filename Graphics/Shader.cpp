@@ -20,6 +20,31 @@ void Shader::loadShader(const char* vertexShaderSource, const char* fragmentShad
     glDeleteShader(vertexShader);
     glDeleteShader(fragmentShader);
 }
+void Shader::loadShader(const char* vertexShaderSource, const char* fragmentShaderSource, const char* geometryShaderSource) {
+    unsigned int vertexShader;
+    unsigned int fragmentShader;
+    unsigned int geometryShader;
+    vertexShader = glCreateShader(GL_VERTEX_SHADER);
+    glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
+    glCompileShader(vertexShader);
+
+    geometryShader = glCreateShader(GL_GEOMETRY_SHADER);
+    glShaderSource(geometryShader, 1, &geometryShaderSource, NULL);
+    glCompileShader(geometryShader);
+
+    fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+    glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
+    glCompileShader(fragmentShader);
+
+    m_ID = glCreateProgram();
+    glAttachShader(m_ID, vertexShader);
+    glAttachShader(m_ID, geometryShader);
+    glAttachShader(m_ID, fragmentShader);
+    glLinkProgram(m_ID);
+    glDeleteShader(vertexShader);
+    glDeleteShader(geometryShader);
+    glDeleteShader(fragmentShader);
+}
 void Shader::use() {
     glUseProgram(m_ID);
 }

@@ -9,6 +9,7 @@ public:
     unsigned int m_ID;
     Shader();
     void loadShader(const char* vertexShaderSource, const char* fragmentShaderSource);
+    void loadShader(const char* vertexShaderSource, const char* fragmentShaderSource, const char* geometryShaderSource);
     void use();
     void deleteShader();
     void setValue(const std::string &uniformName, const int value);

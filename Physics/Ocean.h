@@ -1,7 +1,7 @@
 #pragma once
 #ifndef OCEAN_H
 #include "PhysicsObject.h"
-class Ocean : public PhysicsObject {
+class Ocean : public PhysicsObjects::PhysicsObject {
 public:
     Ocean();
 };

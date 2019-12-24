@@ -3,7 +3,7 @@
 #include <vector>
 //#include <glm/glm.hpp>
 #include "PhysicsObject.h"
-class Node :public PhysicsObject{
+class Node :public PhysicsObjects::PhysicsObject{
 public:
     Node();
 };

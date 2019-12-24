@@ -1,14 +1,15 @@
 #include "Node.h"
 Node::Node() {
     m_Type = "phys_Node";
-    m_Scale = glm::vec3(0.04f, 0.04f, 0.04f);
+    m_Mass = 0.5f;
+    m_Scale = glm::vec3(0.01f, 0.01f, 0.01f);
+    m_Object.m_Mode = 3;
     m_Object.m_Vertices = {
         -0.5f, -0.5f, -0.5f,
          0.5f, -0.5f, -0.5f,
          0.5f,  0.5f, -0.5f,
         -0.5f,  0.5f, -0.5f,
         
-
         -0.5f, -0.5f,  0.5f,
          0.5f, -0.5f,  0.5f,
          0.5f,  0.5f,  0.5f,

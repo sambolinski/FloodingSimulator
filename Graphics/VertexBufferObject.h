@@ -9,6 +9,7 @@ public:
 
     VertexBufferObject() {}
     VertexBufferObject(std::vector<float> &vertices);
+    void update(std::vector<float> &vertices);
     void bind() const;
     void unbind() const;
 };

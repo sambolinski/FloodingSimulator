@@ -1,7 +1,8 @@
 #include "Ocean.h"
 Ocean::Ocean() {
-    m_PhysicsEnabled = false;
+    m_GravityEnabled = false;
     m_Type = "static_Ocean";
+    m_Object.m_Mode = 3;
     m_Position = glm::vec3(0.0f, 0.0f, 5.0f);
     m_Object.m_Colour = glm::vec4(0.157f, 0.286f, 0.510f, 1.0f);
     m_Object.m_Vertices = {

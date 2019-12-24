@@ -4,6 +4,7 @@
 #include "Graphics/Renderer.h"
 #include "Physics/Node.h"
 #include "Controller.h"
+#include <glm/gtx/string_cast.hpp>
 
 /*The OpenGL graphics for this project makes extensive use of the tutorial by Joey de Vries
 found here: https://learnopengl.com/
@@ -21,7 +22,7 @@ void framebufferSizeCallback(GLFWwindow* window, int width, int height) {
     glViewport(0, 0, width, height);
 }
 
-void processInput(GLFWwindow* window) {
+void processInput(GLFWwindow* window, Simulation::Controller &controller) {
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
         camera.m_CameraPos += camera.m_CameraSpeed * camera.m_CameraFront;
     }if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
@@ -34,6 +35,10 @@ void processInput(GLFWwindow* window) {
         camera.m_CameraPos += camera.m_CameraUp *camera.m_CameraSpeed;
     }if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) {
         camera.m_CameraPos -= camera.m_CameraUp *camera.m_CameraSpeed;
+    }if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) {
+        controller.m_World.m_Ship.m_NodeList.at("0-0-0").applyForce(glm::vec3(0.0f, 10.0f, 0.0f));
+    }if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS) {
+        controller.m_World.m_Ship.m_NodeList.at("0-0-0").applyForce(glm::vec3(0.0f, 100.0f, 0.0f));
     }
 }
 void processMouseInput(GLFWwindow* window, double xpos, double ypos) {
@@ -88,12 +93,17 @@ int main() {
     //allows drawing in glfw context whilst resizing
     glfwSetFramebufferSizeCallback(window, framebufferSizeCallback); 
     glfwSetCursorPosCallback(window, processMouseInput);
+
+    float totalTimeElapsed = 0;
     //main game loop, used to update world and to update drawing
     while (!glfwWindowShouldClose(window)) {
-        processInput(window);
+        processInput(window, controller);
         controller.update();
+        //std::cout << "Average Position: " << glm::to_string(controller.m_World.m_Ship.averagePosition()) << "\n";
         glfwSwapBuffers(window);
         glfwPollEvents();
+        totalTimeElapsed += controller.m_DeltaTime;
+        std::cout << "TIme: " <<totalTimeElapsed << ",         " << "Average Position: " << glm::to_string(controller.m_World.m_Ship.averagePosition()) << "\n" << "\n";
     }
     glfwTerminate();
     return 0;
