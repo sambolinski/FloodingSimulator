@@ -1,6 +1,3 @@
-[
-    {
-		"name": "Steel",
-		"density": 7800,
-	}
-]
+{
+  "Steel": 2
+}

@@ -7,8 +7,13 @@ void PhysicsObjects::PhysicsSpring::update() {
     float deltaLength = glm::length(delta);
     delta *= (m_EquilibriumDistance - deltaLength) / m_EquilibriumDistance * 0.85;
     //std::cout << "deltaLength: " << deltaLength << ", s_EquilibriumDistance: " << PhysicsObjects::PhysicsSpring::s_EquilibriumDistance << "\n";
-    m_FirstObject->m_Position -= delta * m_SecondObject->m_Mass;
-    m_SecondObject->m_Position += delta * m_FirstObject->m_Mass;
+    m_FirstObject->m_Position -= delta * 0.5f;
+    m_SecondObject->m_Position += delta * 0.5f;
+    /*originally
+
+    m_FirstObject->m_Position -= delta * m_Second->m_Mass;
+    m_SecondObject->m_Position += delta * m_First->m_Mass;
+    */
 }
 
 //Credit: Luke Wren

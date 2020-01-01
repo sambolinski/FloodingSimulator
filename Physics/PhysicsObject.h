@@ -18,6 +18,7 @@ namespace PhysicsObjects {
         bool m_UnderWater = false;
         bool m_IsHull = false;
         float m_Density;
+        float m_EmptyVolumePercentage = 100;
         PhysicsObject() {
             m_Scale = glm::vec3(1.0f, 1.0f, 1.0f);
             m_Velocity = glm::vec3(0, 0, 0);
