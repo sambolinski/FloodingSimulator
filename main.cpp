@@ -99,11 +99,11 @@ int main() {
     while (!glfwWindowShouldClose(window)) {
         processInput(window, controller);
         controller.update();
-        //std::cout << "Average Position: " << glm::to_string(controller.m_World.m_Ship.averagePosition()) << "\n";
+        std::cout << "Time:" << totalTimeElapsed << ", Average Position: " << glm::to_string(controller.m_World.m_Ship.averagePosition()) << "\n";
         glfwSwapBuffers(window);
         glfwPollEvents();
+        //std::cout << "nodeBuoyantForce: " << (controller.m_World.m_Ship.m_NodeList.at("0-0-0").m_EmptyVolumePercentage) << "\n";
         totalTimeElapsed += controller.m_DeltaTime;
-        std::cout << "TIme: " <<totalTimeElapsed << ",         " << "Average Position: " << glm::to_string(controller.m_World.m_Ship.averagePosition()) << "\n" << "\n";
     }
     glfwTerminate();
     return 0;
