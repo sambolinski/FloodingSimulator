@@ -114,9 +114,8 @@ void Simulation::World::loadShip() {
             //1 = cross
             int nodeOrientationType = m_Ship.getNodePosition(i->first);
             i->second.m_EmptyVolumePercentage = ((pow(nodeToNodeDistanceMetre,3)*pow(0.5,nodeOrientationType))-(pow(nodeToNodeDistanceMetre, 2)*pow(0.5,nodeOrientationType-1)*m_Ship.hullThickness*nodeOrientationType));
-            i->second.m_Mass = calibrate(i->second.m_EmptyVolumePercentage * i->second.m_Density,100,nodeToNodeDistanceMetre);
-            std::cout << "node: " << i->second.toString() << ", NODETYPE: " << nodeOrientationType << ",   ";
-            std::cout << "asds: " << i->second.m_EmptyVolumePercentage << "\n";
+            i->second.m_Mass = ((i->second.m_EmptyVolumePercentage*pow(100,3)) * (i->second.m_Density*pow(100,3)*pow(nodeToNodeDistanceMetre,3)));
+            std::cout << "node: " << i->second.toString() << ", mass: " << i->second.m_Mass << "\n";
             //0.93325
         }
         //springs
@@ -288,9 +287,9 @@ void Simulation::Controller::updatePhysics() {
 
     //GRAVITY IS CURRENTLY DISABLED IF YOU SEE NO Z MOVEMENT
     for (nodeIter i = m_World.m_Ship.m_NodeList.begin(); i != m_World.m_Ship.m_NodeList.end(); i++) {
-        if (i->second.m_GravityEnabled){
+        if (i->second.m_GravityEnabled && false){
             //std::cout << i->second.toString() << ",masss: " << i->second.m_Mass << "\n";
-            i->second.applyForce(m_World.calibrate(m_World.m_GravityAcceleration*i->second.m_Mass,100,m_World.nodeToNodeDistanceMetre));
+            i->second.applyForce(m_World.calibrate(m_World.m_GravityAcceleration,100,m_World.nodeToNodeDistanceMetre)*i->second.m_Mass);
         }
         //Buoyancy
         if(i->second.m_Position.y <= m_World.m_Ocean.m_Position.y){
@@ -298,10 +297,12 @@ void Simulation::Controller::updatePhysics() {
             if (abs(m_World.m_Ocean.m_Position.y - i->second.m_Position.y) <= 100) {
                 percentageBelowWater = abs(m_World.m_Ocean.m_Position.y - i->second.m_Position.y) / 100;
             }
-            std::cout << i->second.toString() << ", percentage below: " << percentageBelowWater << "\n";
-            std::cout << "buoyant: " << glm::to_string(m_World.calibrate(m_World.m_GravityAcceleration*i->second.m_EmptyVolumePercentage*m_World.m_WaterDensity, 100, m_World.nodeToNodeDistanceMetre)*percentageBelowWater*(-1.0f)) << "\n";
-            i->second.applyForce(m_World.calibrate(m_World.m_GravityAcceleration*i->second.m_EmptyVolumePercentage*m_World.m_WaterDensity,100,m_World.nodeToNodeDistanceMetre)*percentageBelowWater*(-1.0f));
-        
+            //std::cout << i->second.toString() << ", percentage below: " << percentageBelowWater << "\n";
+            //std::cout << "buoyant: " << glm::to_string(m_World.calibrate(m_World.m_GravityAcceleration*i->second.m_EmptyVolumePercentage*m_World.m_WaterDensity, 100, m_World.nodeToNodeDistanceMetre)*percentageBelowWater*(-1.0f)) << "\n";
+            i->second.applyForce(m_World.calibrate(m_World.m_GravityAcceleration,100,m_World.nodeToNodeDistanceMetre)*(i->second.m_EmptyVolumePercentage*(float)pow(100,3))*(m_World.m_WaterDensity*(float)pow(100,3))*pow(m_World.nodeToNodeDistanceMetre,3)*percentageBelowWater*(-1.0f));
+            //std::cout << "velocity: " << glm::to_string(i->second.m_Velocity) << "\n";
+            i->second.applyForce((m_World.m_WaterDensity*(float)pow(100, 3))*(pow(m_World.nodeToNodeDistanceMetre,2)*100)*(i->second.m_Velocity*i->second.m_Velocity)*0.5f*(-1.0f));
+            
             //drag force
             // F = pv^2Ac/2
             // F = force
@@ -361,6 +362,7 @@ float Simulation::World::calibrate(float data, const float worldDistance, const 
     float scaled = data * worldDistance / realLifeDistance;
     return scaled;
 }
+
 
 //FOR DEBUG
 glm::vec3 Simulation::Ship::averagePosition() {

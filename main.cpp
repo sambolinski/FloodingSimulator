@@ -38,7 +38,7 @@ void processInput(GLFWwindow* window, Simulation::Controller &controller) {
     }if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) {
         controller.m_World.m_Ship.m_NodeList.at("0-0-0").applyForce(glm::vec3(0.0f, 10.0f, 0.0f));
     }if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS) {
-        controller.m_World.m_Ship.m_NodeList.at("0-0-0").applyForce(glm::vec3(0.0f, 100.0f, 0.0f));
+        controller.m_World.m_Ship.m_NodeList.at("0-0-0").applyForce(glm::vec3(0.0f, 1000000000.0f, 0.0f));
     }
 }
 void processMouseInput(GLFWwindow* window, double xpos, double ypos) {
@@ -99,7 +99,7 @@ int main() {
     while (!glfwWindowShouldClose(window)) {
         processInput(window, controller);
         controller.update();
-        std::cout << "Time:" << totalTimeElapsed << ", Average Position: " << glm::to_string(controller.m_World.m_Ship.averagePosition()) << "\n";
+        //std::cout << "Time:" << totalTimeElapsed << ", Average Position: " << glm::to_string(controller.m_World.m_Ship.averagePosition()) << "\n";
         glfwSwapBuffers(window);
         glfwPollEvents();
         //std::cout << "nodeBuoyantForce: " << (controller.m_World.m_Ship.m_NodeList.at("0-0-0").m_EmptyVolumePercentage) << "\n";
