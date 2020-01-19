@@ -1,6 +1,6 @@
 {
   "hullMaterial": "Steel",
   "hullThickness": 0.022225,
-  "waterDensity": 15600,
+  "waterDensity": 1000,
   "structure": "Ships/twobythree.txt"
 }

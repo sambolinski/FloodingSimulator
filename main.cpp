@@ -88,7 +88,6 @@ int main() {
         return -1;
     }
     Simulation::Controller controller(camera);
-    //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     //allows drawing in glfw context whilst resizing
     glfwSetFramebufferSizeCallback(window, framebufferSizeCallback); 
@@ -99,7 +98,7 @@ int main() {
     while (!glfwWindowShouldClose(window)) {
         processInput(window, controller);
         controller.update();
-        //std::cout << "Time:" << totalTimeElapsed << ", Average Position: " << glm::to_string(controller.m_World.m_Ship.averagePosition()) << "\n";
+        std::cout << "Time:" << totalTimeElapsed << ", Average Position: " << controller.m_World.m_Ship.m_NodeList.at("0-0-0").toString() << "\n";
         glfwSwapBuffers(window);
         glfwPollEvents();
         //std::cout << "nodeBuoyantForce: " << (controller.m_World.m_Ship.m_NodeList.at("0-0-0").m_EmptyVolumePercentage) << "\n";

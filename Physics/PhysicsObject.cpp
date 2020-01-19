@@ -100,8 +100,9 @@ void PhysicsObjects::PhysicsObject::update(float deltaTime) {
 
     
     glm::vec3 lastPosition = m_Position;
-    m_Position += (m_Position - m_LastPosition) + m_Force * (deltaTime * deltaTime / m_Mass);
-    m_Velocity = (m_Position - m_LastPosition) / deltaTime;
+    float calibration = 100 / 2;
+    m_Position += (m_Position - m_LastPosition) + (m_Force * calibration) * (deltaTime * deltaTime / m_Mass);
+    m_Velocity = ((m_Position - m_LastPosition) / calibration) / deltaTime;
     m_LastPosition = lastPosition;
     /*
     glm::vec3 newPosition = m_Position + (m_Velocity * deltaTime) + (m_Acceleration)*(deltaTime*deltaTime*0.5f);
