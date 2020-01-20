@@ -99,7 +99,7 @@ void Simulation::World::loadShip() {
         }
         shipFile.close();
     } else {
-        std::cout << "FILE NOT OPEN\n";
+        std::cout << "File not open\n";
     }
 
     
@@ -259,7 +259,7 @@ int Simulation::Ship::getNodePosition(const std::string &objectCoord) {
         }
         counter++;
     }
-    if (xCount >= 4 || yCount >= 4 || zCount >= 4) {
+    if (xCount + yCount >= 4 || yCount + zCount >= 4 || xCount + zCount >= 4) {
         return 1;
     }else if (xCount < 2 && yCount < 2 && zCount < 2) {
         return 3;
