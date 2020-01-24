@@ -25,20 +25,42 @@ void framebufferSizeCallback(GLFWwindow* window, int width, int height) {
 void processInput(GLFWwindow* window, Simulation::Controller &controller) {
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
         camera.m_CameraPos += camera.m_CameraSpeed * camera.m_CameraFront;
-    }if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
+    }
+    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
         camera.m_CameraPos -= camera.m_CameraSpeed * camera.m_CameraFront;
-    }if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
+    }
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
         camera.m_CameraPos -= glm::normalize(glm::cross(camera.m_CameraFront, camera.m_CameraUp)) * camera.m_CameraSpeed;
-    }if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
+    }
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
         camera.m_CameraPos += glm::normalize(glm::cross(camera.m_CameraFront, camera.m_CameraUp)) *camera.m_CameraSpeed;
-    }if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
+    }
+    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
         camera.m_CameraPos += camera.m_CameraUp *camera.m_CameraSpeed;
-    }if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) {
+    }
+    if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) {
         camera.m_CameraPos -= camera.m_CameraUp *camera.m_CameraSpeed;
-    }if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) {
-        controller.m_World.m_Ship.m_NodeList.at("0-0-0").applyForce(glm::vec3(0.0f, 10.0f, 0.0f));
-    }if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS) {
-        controller.m_World.m_Ship.m_NodeList.at("0-0-0").applyForce(glm::vec3(0.0f, 1000000000.0f, 0.0f));
+    }
+    if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) {
+        //first node full water applied
+        controller.m_World.m_Ship.m_NodeList.at("0-0-0").flood(controller.m_World.m_Ship.m_NodeList.at("0-0-0").m_MaxFloodableVolume);
+    }
+    if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS) {
+        //all node full applied
+        typedef std::map<std::string, PhysicsObjects::PhysicsObject>::iterator nodeIter;
+        for (nodeIter i = controller.m_World.m_Ship.m_NodeList.begin(); i != controller.m_World.m_Ship.m_NodeList.end(); i++) {
+           i->second.flood(i->second.m_MaxFloodableVolume);
+        }
+    }
+    if (glfwGetKey(window, GLFW_KEY_T) == GLFW_PRESS) {
+        controller.incrementalFlooding = (controller.incrementalFlooding == true) ? false : true;
+    }
+
+    //starts the flooding at the specified node
+    if (glfwGetKey(window, GLFW_KEY_P) == GLFW_PRESS) {
+        if (controller.floodingStart == false) {
+            controller.startFlooding(controller.m_World.m_Ship.m_NodeList.at("0-0-0"));
+        }
     }
 }
 void processMouseInput(GLFWwindow* window, double xpos, double ypos) {
@@ -61,6 +83,7 @@ void processMouseInput(GLFWwindow* window, double xpos, double ypos) {
     camera.m_Yaw += xOffset;
     camera.m_Pitch += yOffset;
 
+    //max pitch stops camera going upside down
     if (camera.m_Pitch > 89.0f)
         camera.m_Pitch = 89.0f;
     if (camera.m_Pitch < -89.0f)
@@ -98,7 +121,7 @@ int main() {
     while (!glfwWindowShouldClose(window)) {
         processInput(window, controller);
         controller.update();
-        std::cout << "Time:" << totalTimeElapsed << ", Average Position: " << controller.m_World.m_Ship.m_NodeList.at("0-0-0").toString() << "\n";
+        //std::cout << "Time:" << totalTimeElapsed << ", Average Position: " << controller.m_World.m_Ship.m_NodeList.at("0-0-0").toString() << "\n";
         glfwSwapBuffers(window);
         glfwPollEvents();
         //std::cout << "nodeBuoyantForce: " << (controller.m_World.m_Ship.m_NodeList.at("0-0-0").m_EmptyVolumePercentage) << "\n";

@@ -15,18 +15,17 @@ namespace Simulation {
         std::map<std::string,PhysicsObjects::PhysicsSpring> m_SpringList;
         float hullThickness;
         unsigned int nodesBelowWater = 0;
+        float totalFloodedVolume = 0;
         int getNodePosition(const std::string &objectCoord);
         glm::vec3 averagePosition();
     };
     struct World {
         const float nodeToNodeDistanceMetre = 2;
-
-
         glm::vec3 m_GravityAcceleration = glm::vec3(0.0f,-9.81f,0.0f);
         Simulation::Ship m_Ship;
         std::map<std::string, PhysicsObjects::PhysicsObject> m_OtherRenderedObjects;
+
         Ocean m_Ocean;
-        float m_WorldForceMultiplier = 1; //used to scale the forces on every object
         float m_WaterDensity = 1000; //density of water in kgm^-3
 
         void loadWorld();
@@ -42,10 +41,20 @@ namespace Simulation {
         World m_World;
         float m_DeltaTime = 0.0f;
         float m_LastTime = 0.0f;
+        bool incrementalFlooding = false; //for testing incremental flooding only
+        bool floodingStart = false;
+        std::map<std::string, PhysicsObjects::PhysicsObject> m_FloodingList; //list of nodes that are currently flooding
 
         Controller(Camera &camera);
         void update();
         glm::vec3 applyForce();
+
+        //functions to do with flooding
+        void startFlooding(PhysicsObjects::PhysicsObject &firstNode);
+        float calculateFloodingAmount(float deltaTime);
+        void addAdjacentNodes(std::map<std::string, PhysicsObjects::PhysicsObject>::iterator node);
+
+        //update function
         void updatePhysics();
         void updateGraphics();
 

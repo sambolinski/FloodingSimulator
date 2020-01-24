@@ -5,16 +5,17 @@
 #include <iostream>
 #include <sstream>
 #include <glm/gtx/string_cast.hpp>
+#include <math.h> 
 #include "json11.hpp"
 
 void Simulation::World::loadWorld() {
-    m_OtherRenderedObjects.emplace(m_Ocean.m_Type,m_Ocean);
+    m_OtherRenderedObjects.emplace(m_Ocean.m_Type, m_Ocean);
     loadShip();
 }
 void Simulation::World::loadShip() {
     /*
     00000                   If this is the unput the bottom layer will be steel followed by a second layer above of steel,
-    00S00                   0 means ignore, 
+    00S00                   0 means ignore,
     00000
     -
     00000
@@ -27,7 +28,7 @@ void Simulation::World::loadShip() {
 
     std::string line;
     std::ifstream shipFile;
-    shipFile.open("Ships/twobythree.json");
+    shipFile.open("Ships/twobyThree.json");
     int xLayer = 0;
     int yLayer = 0;
     int zLayer = 0;
@@ -60,13 +61,13 @@ void Simulation::World::loadShip() {
 
     shipFile.open(json["structure"].string_value().c_str());
     if (shipFile.is_open()) {
-        while(getline(shipFile, line)){
+        while (getline(shipFile, line)) {
             for (char& c : line) {
                 if (c == '-') {
                     yLayer = -1;
                     zLayer++;
                 }
-                if (c!='0' && c!= ' ') {
+                if (c != '0' && c != ' ') {
                     if (c == 'H') {
                         colour = glm::vec4(0.310f, 0.318f, 0.329f, 1.0f);
                         gravityEnabled = true;
@@ -74,7 +75,7 @@ void Simulation::World::loadShip() {
                         isHull = true;
                     } else if (c == 'A') {
                         colour = glm::vec4(0.839f, 0.839f, 0.839f, 1.0f);
-                        density = 0;
+                        density = hullDensity;
                         gravityEnabled = false;
                         isHull = false;
                     }
@@ -84,12 +85,13 @@ void Simulation::World::loadShip() {
                         node.m_Density = density;
                         node.m_IsHull = isHull;
                         node.m_GravityEnabled = gravityEnabled;
-                        node.m_Position = glm::vec3((yLayer)*(1/node.m_Scale.x), (zLayer)*(1 / node.m_Scale.y), (xLayer)*(1 / node.m_Scale.z));
-                        std::string positionalKey =  std::to_string(xLayer)+"-"
-                                                    +std::to_string(yLayer)+"-"
-                                                    +std::to_string(zLayer);
+                        node.m_Position = glm::vec3((yLayer)*(1 / node.m_Scale.x), (zLayer)*(1 / node.m_Scale.y), (xLayer)*(1 / node.m_Scale.z));
+                        std::string positionalKey = std::to_string(xLayer) + "-"
+                            + std::to_string(yLayer) + "-"
+                            + std::to_string(zLayer);
                         node.m_LastPosition = node.m_Position;
-                        m_Ship.m_NodeList.emplace(positionalKey,node);
+                        node.m_ID = positionalKey;
+                        m_Ship.m_NodeList.emplace(positionalKey, node);
                     }
                 }
                 xLayer++;
@@ -102,9 +104,10 @@ void Simulation::World::loadShip() {
         std::cout << "File not open\n";
     }
 
-    
+
     unsigned int TESTCOUNTER = 0;
     typedef std::map<std::string, PhysicsObjects::PhysicsObject>::iterator nodeIter;
+    float hullVolumeTEST = 0;
     for (nodeIter i = m_Ship.m_NodeList.begin(); i != m_Ship.m_NodeList.end(); i++) {
         if (i->second.m_IsHull) {
             //Neighbour counter
@@ -114,13 +117,20 @@ void Simulation::World::loadShip() {
             int nodeOrientationType = m_Ship.getNodePosition(i->first);
 
             //(8*0.5^3) - ((4*0.5^2)^2*3*)
-            float hullVolume = (pow(nodeToNodeDistanceMetre, 2)*pow(0.5, nodeOrientationType-1)*0.022225*nodeOrientationType);
+            float hullVolume = (pow(nodeToNodeDistanceMetre, 2)*pow(0.5, nodeOrientationType - 1)*0.022225*nodeOrientationType);
+            hullVolumeTEST += hullVolume; //delete after test
             //i->second.m_EmptyVolumePercentage = ((pow(nodeToNodeDistanceMetre, 3)*pow(0.5,nodeOrientationType))-(pow(nodeToNodeDistanceMetre, 2)*pow(0.5,nodeOrientationType-1))*m_Ship.hullThickness*nodeOrientationType);
             i->second.m_Volume = (pow(nodeToNodeDistanceMetre, 3)*pow(0.5, nodeOrientationType));
-            
+            i->second.m_MaxFloodableVolume = i->second.m_Volume - hullVolume; //volume that's floodable is volume of node without the space taken by the hull
             i->second.m_Mass = (hullVolume * i->second.m_Density);
-            std::cout << "node: " << i->second.toString() << ", mass: " << i->second.m_Mass << ", Node Orientation: " << nodeOrientationType << ", EmptyVolume: " << i->second.m_Volume << "\n";
+            if (nodeOrientationType == 1) {
+                std::cout << "node: " << i->second.toString() << ", mass: " << i->second.m_Mass << ", Node Orientation: " << nodeOrientationType << ", EmptyVolume: " << i->second.m_Volume << "\n";
+            }
             //0.93325
+        } else {
+            i->second.m_Volume = pow(nodeToNodeDistanceMetre, 3);
+            i->second.m_MaxFloodableVolume = i->second.m_Volume;
+            i->second.m_Mass = i->second.m_Volume*i->second.m_Density;
         }
         //springs
         xLayer = 0;
@@ -135,15 +145,15 @@ void Simulation::World::loadShip() {
         for (char c : i->first) {
             if (c != '-') {
                 switch (counter) {
-                    case 0:
-                        xLayerString += c;
-                        break;
-                    case 1:
-                        yLayerString += c;
-                        break;
-                    case 2:
-                        zLayerString += c;
-                        break;
+                case 0:
+                xLayerString += c;
+                break;
+                case 1:
+                yLayerString += c;
+                break;
+                case 2:
+                zLayerString += c;
+                break;
                 }
             } else {
                 counter++;
@@ -153,15 +163,15 @@ void Simulation::World::loadShip() {
         std::stringstream(yLayerString) >> yLayer;
         std::stringstream(zLayerString) >> zLayer;
         std::string currentKey = std::to_string(xLayer) + "-"
-            +std::to_string(yLayer) + "-"
-            +std::to_string(zLayer);
+            + std::to_string(yLayer) + "-"
+            + std::to_string(zLayer);
         for (int x = -1; x <= 1; x++) {
             for (int y = -1; y <= 1; y++) {
                 for (int z = -1; z <= 1; z++) {
                     if (x != 0 || y != 0 || z != 0) {
-                        std::string keyCheck = std::to_string(xLayer + x) +"-"
-                            +std::to_string(yLayer + y) +"-"
-                            +std::to_string(zLayer + z);
+                        std::string keyCheck = std::to_string(xLayer + x) + "-"
+                            + std::to_string(yLayer + y) + "-"
+                            + std::to_string(zLayer + z);
                         std::map<std::string, PhysicsObjects::PhysicsObject>::iterator comparableNodeIter = m_Ship.m_NodeList.find(keyCheck);
 
                         if (comparableNodeIter != m_Ship.m_NodeList.end()) {
@@ -184,8 +194,9 @@ void Simulation::World::loadShip() {
             }
         }
     }
+    std::cout << "hullVolumeTotal: " << hullVolumeTEST << "\n";
     std::cout << "NODE COUNT: " << m_Ship.m_NodeList.size() << "\n";
-    std::cout << "SPRING COUNT: " << m_Ship.m_SpringList.size() << "\n";    
+    std::cout << "SPRING COUNT: " << m_Ship.m_SpringList.size() << "\n";
 }
 
 json11::Json Simulation::World::loadMaterial() {
@@ -239,7 +250,7 @@ int Simulation::Ship::getNodePosition(const std::string &objectCoord) {
     std::string checkY2 = xLayerString + "-" + std::to_string(yLayer - 1) + "-" + zLayerString;
     std::string checkZ1 = xLayerString + "-" + yLayerString + "-" + std::to_string(zLayer + 1);
     std::string checkZ2 = xLayerString + "-" + yLayerString + "-" + std::to_string(zLayer - 1);
-    std::string checks[6] = { checkX1, checkY1, checkZ1, checkX2, checkY2, checkZ2};
+    std::string checks[6] = { checkX1, checkY1, checkZ1, checkX2, checkY2, checkZ2 };
 
     unsigned int xCount = 0;
     unsigned int yCount = 0;
@@ -261,7 +272,7 @@ int Simulation::Ship::getNodePosition(const std::string &objectCoord) {
     }
     if (xCount + yCount >= 4 || yCount + zCount >= 4 || xCount + zCount >= 4) {
         return 1;
-    }else if (xCount < 2 && yCount < 2 && zCount < 2) {
+    } else if (xCount < 2 && yCount < 2 && zCount < 2) {
         return 3;
     } else {
         return 2;
@@ -287,24 +298,48 @@ void Simulation::Controller::update() {
 // Credit: Luke Wren
 void Simulation::Controller::updatePhysics() {
     typedef std::map<std::string, PhysicsObjects::PhysicsObject>::iterator nodeIter;
+    typedef std::map<std::string, PhysicsObjects::PhysicsObject>::iterator floodingIter;
+    typedef std::map<std::string, PhysicsObjects::PhysicsObject>::iterator erasureIter;
     typedef std::map<std::string, PhysicsObjects::PhysicsSpring>::iterator springIter;
-
+    std::map<std::string, PhysicsObjects::PhysicsObject> markedForErasure;
+    
+    
+    if (floodingStart) {
+        //std::cout << "-----------------------------------------------\n";
+        //float waterFlowed = calculateFloodingAmount(m_DeltaTime)/m_FloodingList.size();
+        for (floodingIter i = m_FloodingList.begin(); i != m_FloodingList.end(); i++) {
+            float waterFlowed = i->second.m_MaxFloodableVolume * 0.01;
+            i->second.flood(waterFlowed);
+            //std::cout << i->first << ": FloodedPercentage: " << ((i->second.m_CurrentFloodedVolume) / (i->second.m_MaxFloodableVolume)) * 100 << "\n";
+            if (i->second.m_CurrentFloodedVolume == i->second.m_MaxFloodableVolume) {
+               markedForErasure.emplace(i->first, i->second);
+            }
+        }
+        for (erasureIter i = markedForErasure.begin(); i != markedForErasure.end(); i++) {
+            //addAdjacentNodes(i);
+            m_FloodingList.erase(i->first);
+        }
+    }
     //GRAVITY IS CURRENTLY DISABLED IF YOU SEE NO Z MOVEMENT
     for (nodeIter i = m_World.m_Ship.m_NodeList.begin(); i != m_World.m_Ship.m_NodeList.end(); i++) {
-        if (i->second.m_GravityEnabled){
+
+        if (i->second.m_GravityEnabled) {
             //std::cout << i->second.toString() << ",masss: " << i->second.m_Mass << "\n";
             i->second.applyForce(m_World.m_GravityAcceleration*i->second.m_Mass);
         }
         //Buoyancy
-        if(i->second.m_Position.y <= m_World.m_Ocean.m_Position.y){
+        if (i->second.m_Position.y <= m_World.m_Ocean.m_Position.y) {
             float percentageBelowWater = 1;
-            if (abs(m_World.m_Ocean.m_Position.y - i->second.m_Position.y) <= 100) {
-                percentageBelowWater = abs(m_World.m_Ocean.m_Position.y - i->second.m_Position.y) / 100;
+            float depthPercentageMax = 100;
+            depthPercentageMax = (i->second.m_IsHull) ? 100 : 50; //calibrates better with surrounding air nodes because centre of surrounded ndoes is different thatn hull nodes
+            if (abs(m_World.m_Ocean.m_Position.y - i->second.m_Position.y) <= depthPercentageMax) {
+                percentageBelowWater = abs(m_World.m_Ocean.m_Position.y - i->second.m_Position.y) / depthPercentageMax;
             }
-            
-            std::cout << i->second.toString() << "Empty Volume Percentage:  " << i->second.m_Volume << "\n";
+
+
+            //std::cout << i->first << ": FloodedPercentage: " << ((i->second.m_CurrentFloodedVolume) / (i->second.m_MaxFloodableVolume)) * 100 << "\n";
             //std::cout << "buoyant: " << glm::to_string(m_World.calibrate(m_World.m_GravityAcceleration*i->second.m_EmptyVolumePercentage*m_World.m_WaterDensity, 100, m_World.nodeToNodeDistanceMetre)*percentageBelowWater*(-1.0f)) << "\n";
-            i->second.applyForce(m_World.m_GravityAcceleration*i->second.m_Volume*(m_World.m_WaterDensity)*percentageBelowWater*(-1.0f));
+            i->second.applyForce(m_World.m_GravityAcceleration*(i->second.m_Volume-i->second.m_CurrentFloodedVolume)*(m_World.m_WaterDensity)*percentageBelowWater*(-1.0f));
             //std::cout << "velocity: " << glm::to_string(i->second.m_Velocity) << "\n";
 
 
@@ -312,20 +347,20 @@ void Simulation::Controller::updatePhysics() {
             //i->second.applyForce((m_World.m_WaterDensity*(pow(m_World.nodeToNodeDistanceMetre,2))*(i->second.m_Velocity*i->second.m_Velocity)*0.5f*(-1.0f))); //actual
             //std::cout << "Mass of Node : " << i->second.m_Mass << "\n";
             //std::cout << i->second.toString() << ", Velocity below: " << glm::to_string(i->second.m_Velocity) << "\n";
-            i->second.applyForce((glm::abs(i->second.m_Velocity)*i->second.m_Velocity)*(-10.0f)); //test drag, just used for slowing down based on velocity
+            i->second.applyForce((glm::abs(i->second.m_Velocity)*i->second.m_Velocity)*(-20.0f)); //test drag, just used for slowing down based on velocity
 
 
-            
+
             //drag force
             // F = pv^2Ac/2
             // F = force
             // p = density of fluid
             // v = velocity of object
             // c = coefficient which will be 1
-            // A = area of drag. corner edge and cross will be different            
-            i->second.update(m_DeltaTime);
-            i->second.m_Force = glm::vec3(0.0f, 0.0f, 0.0f);
+            // A = area of drag. corner edge and cross will be different   
         }
+        i->second.update(m_DeltaTime);
+        i->second.m_Force = glm::vec3(0.0f, 0.0f, 0.0f);
     }
     //Spring physics update
     //first for loop used as iterations. Greater number of iterations == greater accuracy but more expensive to compute  
@@ -338,13 +373,86 @@ void Simulation::Controller::updatePhysics() {
             }
         }
         for (springIter j = m_World.m_Ship.m_SpringList.begin(); j != m_World.m_Ship.m_SpringList.end(); j++) {
-            float dampingAmount = pow(0.5f,m_DeltaTime);
+            float dampingAmount = pow(0.5f, m_DeltaTime);
             j->second.applyDamping(dampingAmount);
             if (k == 0) {
-                j->second.updateRenderObject(false,100.0f);
+                j->second.updateRenderObject(false, 100.0f);
             }
         }
     }
+}
+
+void Simulation::Controller::addAdjacentNodes(std::map<std::string, PhysicsObjects::PhysicsObject>::iterator node) {
+    int xLayer = 0;
+    int yLayer = 0;
+    int zLayer = 0;
+    unsigned int counter = 0;
+    std::string xLayerString = "";
+    std::string yLayerString = "";
+    std::string zLayerString = "";
+    for (char c : node->first) {
+        if (c != '-') {
+            switch (counter) {
+            case 0:
+            xLayerString += c;
+            break;
+            case 1:
+            yLayerString += c;
+            break;
+            case 2:
+            zLayerString += c;
+            break;
+            }
+        } else {
+            counter++;
+        }
+    }
+
+    std::map<std::string, PhysicsObjects::PhysicsObject>::iterator comparableNodeListIter;
+    std::stringstream(xLayerString) >> xLayer;
+    std::stringstream(yLayerString) >> yLayer;
+    std::stringstream(zLayerString) >> zLayer;
+    for (int x = -1; x <= 1; x++) {
+        for (int y = -1; y <= 1; y++) {
+            for (int z = -1; z <= 1; z++) {
+                if (x != 0 || y != 0 || z != 0) {
+                    std::string keyCheck = std::to_string(xLayer + x) + "-"
+                        + std::to_string(yLayer + y) + "-"
+                        + std::to_string(zLayer + z);
+                    comparableNodeListIter = m_World.m_Ship.m_NodeList.find(keyCheck);
+                    if (comparableNodeListIter != m_World.m_Ship.m_NodeList.end() && comparableNodeListIter->second.m_CurrentFloodedVolume != comparableNodeListIter->second.m_MaxFloodableVolume) {
+                        m_FloodingList.emplace(keyCheck, comparableNodeListIter->second);
+                    }
+                }
+            }
+        }
+    }
+}
+/*
+float Simulation::Controller::calculateFloodingAmount(float deltaTime) {
+    float waterlineDepth = 0;
+    typedef std::map<std::string, PhysicsObjects::PhysicsObject>::iterator nodeIter;
+    waterlineDepth = glm::length(m_World.m_Ocean.m_Position - m_FloodingList.begin()->second.m_Position);
+    for (nodeIter i = m_FloodingList.begin(); i != m_FloodingList.end(); i++) {
+        float nodeDepth = (glm::length(m_World.m_Ocean.m_Position - i->second.m_Position));
+        if (nodeDepth < waterlineDepth && nodeDepth >= 0) {
+            waterlineDepth = nodeDepth;
+        }
+    }
+
+    //Torricelli's law
+    // velocity of water through a hole = sqrt(2*g*h)
+    // calibrated water height = waterlineDepth / 100 * nodeToNodeDistanceMetre
+    // amount of water = area * velocity * dt
+    float waterVelocity = sqrt(2*m_World.m_GravityAcceleration.y * (waterlineDepth/100)*m_World.nodeToNodeDistanceMetre);
+    std::cout << "depth: " << waterlineDepth << "\n";
+    float area = 0.0625;
+    return area * waterVelocity * deltaTime;
+}
+*/
+void Simulation::Controller::startFlooding(PhysicsObjects::PhysicsObject &physicsObject) {
+    floodingStart = true;
+    m_FloodingList.emplace(physicsObject.m_ID, physicsObject);
 }
 
 glm::vec3 Simulation::Controller::applyForce() {

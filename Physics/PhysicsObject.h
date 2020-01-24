@@ -6,6 +6,7 @@ namespace PhysicsObjects {
     class PhysicsObject {
     public:
         std::string m_Type;
+        std::string m_ID;
         Object m_Object;
         glm::vec3 m_Position;
         glm::vec3 m_LastPosition;
@@ -19,6 +20,11 @@ namespace PhysicsObjects {
         bool m_IsHull = false;
         float m_Density;
         float m_Volume = 100;
+
+        //values for flooding
+        float m_MaxFloodableVolume;
+        float m_CurrentFloodedVolume = 0;
+        bool m_FloodingAllowed = false;
         PhysicsObject() {
             m_Scale = glm::vec3(1.0f, 1.0f, 1.0f);
             m_Velocity = glm::vec3(0, 0, 0);
@@ -26,6 +32,7 @@ namespace PhysicsObjects {
         }
         void update(float deltaTime);
         void applyForce(glm::vec3 force);
+        void flood(float amount) { m_CurrentFloodedVolume = (m_CurrentFloodedVolume + amount < m_MaxFloodableVolume) ? m_CurrentFloodedVolume + amount : m_MaxFloodableVolume; }
         std::string toString() {
             return "(" + std::to_string(m_Position.x) + ", "
                        + std::to_string(m_Position.y) + ", "
