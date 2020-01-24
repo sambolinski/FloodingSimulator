@@ -16,6 +16,7 @@ namespace Simulation {
         float hullThickness;
         unsigned int nodesBelowWater = 0;
         float totalFloodedVolume = 0;
+        int numberOfNodesFlooded = 0;
         int getNodePosition(const std::string &objectCoord);
         glm::vec3 averagePosition();
     };

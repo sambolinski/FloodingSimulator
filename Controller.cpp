@@ -304,6 +304,7 @@ void Simulation::Controller::updatePhysics() {
     std::map<std::string, PhysicsObjects::PhysicsObject> markedForErasure;
     
     
+    /*
     if (floodingStart) {
         //std::cout << "-----------------------------------------------\n";
         //float waterFlowed = calculateFloodingAmount(m_DeltaTime)/m_FloodingList.size();
@@ -320,9 +321,21 @@ void Simulation::Controller::updatePhysics() {
             m_FloodingList.erase(i->first);
         }
     }
+    */
     //GRAVITY IS CURRENTLY DISABLED IF YOU SEE NO Z MOVEMENT
     for (nodeIter i = m_World.m_Ship.m_NodeList.begin(); i != m_World.m_Ship.m_NodeList.end(); i++) {
-
+        if (floodingStart) {
+            if (i->second.m_FloodingAllowed) {
+                std::cout << "numNodesFlooded: " << m_World.m_Ship.numberOfNodesFlooded << "\n";
+                float waterFlowed = (i->second.m_MaxFloodableVolume * 0.001) / m_World.m_Ship.numberOfNodesFlooded;
+                i->second.flood(waterFlowed);
+                if (i->second.m_CurrentFloodedVolume == i->second.m_MaxFloodableVolume) {
+                    addAdjacentNodes(i);
+                    i->second.m_FloodingAllowed = false;
+                    m_World.m_Ship.numberOfNodesFlooded--;
+                }
+            }
+        }
         if (i->second.m_GravityEnabled) {
             //std::cout << i->second.toString() << ",masss: " << i->second.m_Mass << "\n";
             i->second.applyForce(m_World.m_GravityAcceleration*i->second.m_Mass);
@@ -420,8 +433,9 @@ void Simulation::Controller::addAdjacentNodes(std::map<std::string, PhysicsObjec
                         + std::to_string(yLayer + y) + "-"
                         + std::to_string(zLayer + z);
                     comparableNodeListIter = m_World.m_Ship.m_NodeList.find(keyCheck);
-                    if (comparableNodeListIter != m_World.m_Ship.m_NodeList.end() && comparableNodeListIter->second.m_CurrentFloodedVolume != comparableNodeListIter->second.m_MaxFloodableVolume) {
-                        m_FloodingList.emplace(keyCheck, comparableNodeListIter->second);
+                    if (comparableNodeListIter != m_World.m_Ship.m_NodeList.end() && comparableNodeListIter->second.m_CurrentFloodedVolume != comparableNodeListIter->second.m_MaxFloodableVolume && !comparableNodeListIter->second.m_FloodingAllowed) {
+                        comparableNodeListIter->second.m_FloodingAllowed = true;
+                        m_World.m_Ship.numberOfNodesFlooded++;
                     }
                 }
             }
@@ -452,7 +466,8 @@ float Simulation::Controller::calculateFloodingAmount(float deltaTime) {
 */
 void Simulation::Controller::startFlooding(PhysicsObjects::PhysicsObject &physicsObject) {
     floodingStart = true;
-    m_FloodingList.emplace(physicsObject.m_ID, physicsObject);
+    physicsObject.m_FloodingAllowed = true;
+    m_World.m_Ship.numberOfNodesFlooded++;
 }
 
 glm::vec3 Simulation::Controller::applyForce() {
