@@ -18,6 +18,10 @@ namespace Simulation {
         float totalFloodedVolume = 0;
         int numberOfNodesFlooded = 0;
         int getNodePosition(const std::string &objectCoord);
+        std::vector<PhysicsObjects::PhysicsObject*> m_OuterNodes;
+        float calculateList();
+        float calculateTrim();
+        void findOuterNodes();
         glm::vec3 averagePosition();
     };
     struct World {

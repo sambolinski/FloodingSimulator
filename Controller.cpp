@@ -194,6 +194,7 @@ void Simulation::World::loadShip() {
             }
         }
     }
+    m_Ship.findOuterNodes();
     std::cout << "hullVolumeTotal: " << hullVolumeTEST << "\n";
     std::cout << "NODE COUNT: " << m_Ship.m_NodeList.size() << "\n";
     std::cout << "SPRING COUNT: " << m_Ship.m_SpringList.size() << "\n";
@@ -322,12 +323,18 @@ void Simulation::Controller::updatePhysics() {
         }
     }
     */
+
+    //std::cout << "List: " << m_World.m_Ship.calculateList() << "\n";
+    std::cout << "Trim: " << m_World.m_Ship.calculateTrim() << "\n";
+    
     //GRAVITY IS CURRENTLY DISABLED IF YOU SEE NO Z MOVEMENT
     for (nodeIter i = m_World.m_Ship.m_NodeList.begin(); i != m_World.m_Ship.m_NodeList.end(); i++) {
         if (floodingStart) {
             if (i->second.m_FloodingAllowed) {
-                std::cout << "numNodesFlooded: " << m_World.m_Ship.numberOfNodesFlooded << "\n";
-                float waterFlowed = (i->second.m_MaxFloodableVolume * 0.001) / m_World.m_Ship.numberOfNodesFlooded;
+                //std::cout << "numNodesFlooded: " << m_World.m_Ship.numberOfNodesFlooded << "\n";
+                float waterFlowed = (i->second.m_MaxFloodableVolume * 0.001);// / m_World.m_Ship.numberOfNodesFlooded;
+                //float waterFlowed = calculateFloodingAmount(m_DeltaTime) / m_World.m_Ship.numberOfNodesFlooded;
+                //std::cout << "waterFlowed: " << waterFlowed << "\n";
                 i->second.flood(waterFlowed);
                 if (i->second.m_CurrentFloodedVolume == i->second.m_MaxFloodableVolume) {
                     addAdjacentNodes(i);
@@ -425,6 +432,10 @@ void Simulation::Controller::addAdjacentNodes(std::map<std::string, PhysicsObjec
     std::stringstream(xLayerString) >> xLayer;
     std::stringstream(yLayerString) >> yLayer;
     std::stringstream(zLayerString) >> zLayer;
+
+    //What determines if water flows.
+    //Once node is flooded, adjacent nodes that are not already filling/filled start filling
+    //
     for (int x = -1; x <= 1; x++) {
         for (int y = -1; y <= 1; y++) {
             for (int z = -1; z <= 1; z++) {
@@ -442,15 +453,22 @@ void Simulation::Controller::addAdjacentNodes(std::map<std::string, PhysicsObjec
         }
     }
 }
-/*
+
 float Simulation::Controller::calculateFloodingAmount(float deltaTime) {
     float waterlineDepth = 0;
     typedef std::map<std::string, PhysicsObjects::PhysicsObject>::iterator nodeIter;
-    waterlineDepth = glm::length(m_World.m_Ocean.m_Position - m_FloodingList.begin()->second.m_Position);
-    for (nodeIter i = m_FloodingList.begin(); i != m_FloodingList.end(); i++) {
-        float nodeDepth = (glm::length(m_World.m_Ocean.m_Position - i->second.m_Position));
-        if (nodeDepth < waterlineDepth && nodeDepth >= 0) {
-            waterlineDepth = nodeDepth;
+    unsigned int counterForFirst = 0; //so first node will be assigned base
+    for (nodeIter i = m_World.m_Ship.m_NodeList.begin(); i != m_World.m_Ship.m_NodeList.end(); i++) {
+        if (i->second.m_FloodingAllowed) {
+            float nodeDistance = glm::length(m_World.m_Ocean.m_Position - i->second.m_Position);
+            if (counterForFirst == 0) {
+                waterlineDepth = nodeDistance;
+            } else {
+                if (nodeDistance < waterlineDepth) {
+                    waterlineDepth = nodeDistance;
+                }
+            }
+            counterForFirst++;
         }
     }
 
@@ -458,12 +476,12 @@ float Simulation::Controller::calculateFloodingAmount(float deltaTime) {
     // velocity of water through a hole = sqrt(2*g*h)
     // calibrated water height = waterlineDepth / 100 * nodeToNodeDistanceMetre
     // amount of water = area * velocity * dt
-    float waterVelocity = sqrt(2*m_World.m_GravityAcceleration.y * (waterlineDepth/100)*m_World.nodeToNodeDistanceMetre);
+    float waterVelocity = sqrt(2*glm::length(m_World.m_GravityAcceleration) * (waterlineDepth/100)*m_World.nodeToNodeDistanceMetre);
     std::cout << "depth: " << waterlineDepth << "\n";
-    float area = 0.0625;
+    float area = 0.0025;
     return area * waterVelocity * deltaTime;
 }
-*/
+
 void Simulation::Controller::startFlooding(PhysicsObjects::PhysicsObject &physicsObject) {
     floodingStart = true;
     physicsObject.m_FloodingAllowed = true;
@@ -490,7 +508,54 @@ float Simulation::World::calibrate(float data, const float worldDistance, const 
     return scaled;
 }
 
+void Simulation::Ship::findOuterNodes() {
+    typedef std::map<std::string, PhysicsObjects::PhysicsObject>::iterator nodeIter;
+    PhysicsObjects::PhysicsObject *bowNode = &m_NodeList.begin()->second;
+    PhysicsObjects::PhysicsObject *sternNode = &m_NodeList.begin()->second;
+    PhysicsObjects::PhysicsObject *portNode = &m_NodeList.begin()->second;
+    PhysicsObjects::PhysicsObject *starboardNode = &m_NodeList.begin()->second;
 
+    for (nodeIter i = m_NodeList.begin(); i != m_NodeList.end(); i++) {
+        if (i->second.m_Position.y == 0) {
+            if (i->second.m_Position.x < bowNode->m_Position.x) {
+                bowNode = &i->second;
+            }
+            if (i->second.m_Position.z < portNode->m_Position.z) {
+                portNode = &i->second;
+                std::cout << "blah";
+            }
+        }
+    }
+    for (nodeIter i = m_NodeList.begin(); i != m_NodeList.end(); i++) {
+        if (i->second.m_Position.y == 0) {
+            if (i->second.m_Position.x > sternNode->m_Position.x && i->second.m_Position.z == bowNode->m_Position.z) {
+                sternNode = &i->second;
+            }
+            if (i->second.m_Position.z > starboardNode->m_Position.z  && i->second.m_Position.x == portNode->m_Position.x) {
+                starboardNode = &i->second;
+            }
+        }
+    }
+    m_OuterNodes.push_back(bowNode);
+    m_OuterNodes.push_back(sternNode);
+    m_OuterNodes.push_back(portNode);
+    m_OuterNodes.push_back(starboardNode);
+    std::cout << m_OuterNodes.at(0)->m_ID << "\n";
+    std::cout << m_OuterNodes.at(1)->m_ID << "\n";
+    std::cout << m_OuterNodes.at(2)->m_ID << "\n";
+    std::cout << m_OuterNodes.at(3)->m_ID << "\n";
+}
+
+float Simulation::Ship::calculateTrim() {
+    glm::vec3 difference = m_OuterNodes.at(1)->m_Position - m_OuterNodes.at(0)->m_Position;
+    glm::vec3 flat(difference.x, 0, 0);
+    return acosf(glm::dot(difference,flat)/(glm::length(difference)*glm::length(flat)))*180/3.141f;
+}
+float Simulation::Ship::calculateList() {
+    glm::vec3 difference = m_OuterNodes.at(3)->m_Position - m_OuterNodes.at(2)->m_Position;
+    glm::vec3 flat(0, difference.y, 0);
+    return acosf(glm::dot(difference, flat) / (glm::length(difference)*glm::length(flat))) * 180 / 3.141f;
+}
 //FOR DEBUG
 glm::vec3 Simulation::Ship::averagePosition() {
     typedef std::map<std::string, PhysicsObjects::PhysicsObject>::iterator nodeIter;
