@@ -95,6 +95,16 @@ void PhysicsObjects::PhysicsObject::applyForce(glm::vec3 force) {
     m_Force += force;
 }
 
+float  PhysicsObjects::PhysicsObject::flood(float amount) {
+    if (m_CurrentFloodedVolume + amount < m_MaxFloodableVolume) {
+        m_CurrentFloodedVolume = m_CurrentFloodedVolume + amount;
+        return m_CurrentFloodedVolume + amount;
+    } else {
+        float toReturn = m_MaxFloodableVolume - m_CurrentFloodedVolume;
+        m_CurrentFloodedVolume = m_MaxFloodableVolume;
+        return toReturn;
+    }
+}
 //Credit: Luke Wren
 void PhysicsObjects::PhysicsObject::update(float deltaTime) {
 

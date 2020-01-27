@@ -19,9 +19,14 @@ namespace Simulation {
         int numberOfNodesFlooded = 0;
         int getNodePosition(const std::string &objectCoord);
         std::vector<PhysicsObjects::PhysicsObject*> m_OuterNodes;
+
+        float m_ShipMass = 0;
+        float m_TotalVolume = 0;
         float calculateList();
         float calculateTrim();
+        float calculateMaximumWaterAllowed(glm::vec3 &gravity, float &waterDensity);
         void findOuterNodes();
+        std::string floodingNodeID;
         glm::vec3 averagePosition();
     };
     struct World {
@@ -33,9 +38,9 @@ namespace Simulation {
         Ocean m_Ocean;
         float m_WaterDensity = 1000; //density of water in kgm^-3
 
-        void loadWorld();
+        void loadWorld(std::string &fileName);
         json11::Json loadMaterial();
-        void loadShip();
+        void loadShip(std::string &fileName);
 
         glm::vec3 calibrate(glm::vec3 data, const float worldDistance, const float realLifeDistance);
         float calibrate(float data, const float worldDistance, const float realLifeDistance);
@@ -45,12 +50,14 @@ namespace Simulation {
         Renderer m_Renderer;
         World m_World;
         float m_DeltaTime = 0.0f;
+        float m_TotalTimeElapsed = 0;
         float m_LastTime = 0.0f;
         bool incrementalFlooding = false; //for testing incremental flooding only
         bool floodingStart = false;
+        int currentRoundedTime = 0;
         std::map<std::string, PhysicsObjects::PhysicsObject> m_FloodingList; //list of nodes that are currently flooding
 
-        Controller(Camera &camera);
+        Controller(Camera &camera, std::string &fileName);
         void update();
         glm::vec3 applyForce();
 
@@ -63,8 +70,10 @@ namespace Simulation {
         void updatePhysics();
         void updateGraphics();
 
-
+        //data handling
+        std::string m_FileName;
+        void placeStartingData();
+        void placeIncrementalData();
     };
 };
-
 #endif // !CONTROLLER_H

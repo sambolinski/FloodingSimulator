@@ -59,7 +59,8 @@ void processInput(GLFWwindow* window, Simulation::Controller &controller) {
     //starts the flooding at the specified node
     if (glfwGetKey(window, GLFW_KEY_P) == GLFW_PRESS) {
         if (controller.floodingStart == false) {
-            controller.startFlooding(controller.m_World.m_Ship.m_NodeList.at("0-0-0"));
+            controller.startFlooding(controller.m_World.m_Ship.m_NodeList.at(controller.m_World.m_Ship.floodingNodeID));
+            controller.placeStartingData();
         }
     }
 }
@@ -110,22 +111,19 @@ int main() {
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
         return -1;
     }
-    Simulation::Controller controller(camera);
+    std::string fileName = "twoByThree";
+    Simulation::Controller controller(camera, fileName);
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     //allows drawing in glfw context whilst resizing
     glfwSetFramebufferSizeCallback(window, framebufferSizeCallback); 
     glfwSetCursorPosCallback(window, processMouseInput);
 
-    float totalTimeElapsed = 0;
     //main game loop, used to update world and to update drawing
     while (!glfwWindowShouldClose(window)) {
         processInput(window, controller);
         controller.update();
-        //std::cout << "Time:" << totalTimeElapsed << ", Average Position: " << controller.m_World.m_Ship.m_NodeList.at("0-0-0").toString() << "\n";
         glfwSwapBuffers(window);
         glfwPollEvents();
-        //std::cout << "nodeBuoyantForce: " << (controller.m_World.m_Ship.m_NodeList.at("0-0-0").m_EmptyVolumePercentage) << "\n";
-        totalTimeElapsed += controller.m_DeltaTime;
     }
     glfwTerminate();
     return 0;

@@ -32,7 +32,7 @@ namespace PhysicsObjects {
         }
         void update(float deltaTime);
         void applyForce(glm::vec3 force);
-        void flood(float amount) { m_CurrentFloodedVolume = (m_CurrentFloodedVolume + amount < m_MaxFloodableVolume) ? m_CurrentFloodedVolume + amount : m_MaxFloodableVolume; }
+        float flood(float amount);
         std::string toString() {
             return "(" + std::to_string(m_Position.x) + ", "
                        + std::to_string(m_Position.y) + ", "
