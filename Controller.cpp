@@ -58,6 +58,7 @@ void Simulation::World::loadShip(std::string &fileName) {
     std::cout << "HULLMATERIAL: " << json["hullMaterial"].string_value().c_str() << "HULLDENSITY: " << hullDensity << "\n";
     m_Ship.floodingNodeID = json["floodingNode"].string_value().c_str();
     bool isHull;
+    bool isBulkhead;
     shipFile.close();
 
 
@@ -75,17 +76,26 @@ void Simulation::World::loadShip(std::string &fileName) {
                         gravityEnabled = true;
                         density = hullDensity;
                         isHull = true;
+                        isBulkhead = false;
                     } else if (c == 'A') {
                         colour = glm::vec4(0.839f, 0.839f, 0.839f, 1.0f);
                         density = hullDensity;
                         gravityEnabled = false;
                         isHull = false;
+                        isBulkhead = false;
+                    } else if (c == 'B'){
+                        colour = glm::vec4(0.310f, 0.318f, 0.329f, 1.0f);
+                        gravityEnabled = true;
+                        density = hullDensity;
+                        isHull = true;
+                        isBulkhead = true;
                     }
                     if (c != '-') {
                         Node node;
                         node.m_Object.m_Colour = colour;
                         node.m_Density = density;
                         node.m_IsHull = isHull;
+                        node.m_IsBulkhead = isBulkhead;
                         node.m_GravityEnabled = gravityEnabled;
                         node.m_Position = glm::vec3((yLayer)*(1 / node.m_Scale.x), (zLayer)*(1 / node.m_Scale.y), (xLayer)*(1 / node.m_Scale.z));
                         std::string positionalKey = std::to_string(xLayer) + "-"
@@ -298,7 +308,6 @@ void Simulation::Controller::update() {
     m_Renderer.m_Camera->updateCameraSpeed(m_DeltaTime);
     updatePhysics();
     updateGraphics();
-    std::cout << "time elapsed: " << m_TotalTimeElapsed << ", Intvalue: " << (int)(m_TotalTimeElapsed) << "\n";
     
     if (((int)(m_TotalTimeElapsed)) != currentRoundedTime &&  ((int)(m_TotalTimeElapsed)) % 5 == 0) {
         placeIncrementalData();
@@ -334,7 +343,7 @@ void Simulation::Controller::updatePhysics() {
 
     //std::cout << "List: " << m_World.m_Ship.calculateList() << "\n";
     //std::cout << "Trim: " << m_World.m_Ship.calculateTrim() << "\n";
-    
+    std::cout << "numberOfNodesFlooded: " << m_World.m_Ship.numberOfNodesFlooded << "PercentageFlooded: " << (m_World.m_Ship.totalFloodedVolume/m_World.m_Ship.m_TotalVolume) * 100 << "\n";
     //GRAVITY IS CURRENTLY DISABLED IF YOU SEE NO Z MOVEMENT
     for (nodeIter i = m_World.m_Ship.m_NodeList.begin(); i != m_World.m_Ship.m_NodeList.end(); i++) {
         if (floodingStart) {
@@ -342,11 +351,13 @@ void Simulation::Controller::updatePhysics() {
                 //std::cout << "numNodesFlooded: " << m_World.m_Ship.numberOfNodesFlooded << "\n";
                 float waterFlowed = (i->second.m_MaxFloodableVolume * 0.001);// / m_World.m_Ship.numberOfNodesFlooded;
                 //float waterFlowed = calculateFloodingAmount(m_DeltaTime) / m_World.m_Ship.numberOfNodesFlooded;
-                //std::cout << "waterFlowed: " << waterFlowed << "\n";
+                //std::cout << i->second.m_ID << ", currentFloodedVolume: " << i->second.m_CurrentFloodedVolume << "\n";
                 m_World.m_Ship.totalFloodedVolume += i->second.flood(waterFlowed);
                 //std::cout << "totalFloodedVolume: " << m_World.m_Ship.totalFloodedVolume << "\n";
                 if (i->second.m_CurrentFloodedVolume == i->second.m_MaxFloodableVolume) {
-                    addAdjacentNodes(i);
+                    if (!i->second.m_IsBulkhead) {
+                        addAdjacentNodes(i);
+                    }
                     i->second.m_FloodingAllowed = false;
                     m_World.m_Ship.numberOfNodesFlooded--;
                 }

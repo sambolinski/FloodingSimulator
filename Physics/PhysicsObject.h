@@ -18,6 +18,7 @@ namespace PhysicsObjects {
         bool m_GravityEnabled = false;
         bool m_UnderWater = false;
         bool m_IsHull = false;
+        bool m_IsBulkhead = false;
         float m_Density;
         float m_Volume = 100;
 
