@@ -18,6 +18,7 @@ namespace Simulation {
         float totalFloodedVolume = 0;
         int numberOfNodesFlooded = 0;
         int getNodePosition(const std::string &objectCoord);
+        std::string hullType;
         std::vector<PhysicsObjects::PhysicsObject*> m_OuterNodes;
 
         float m_ShipMass = 0;

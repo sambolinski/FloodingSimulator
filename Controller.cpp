@@ -45,18 +45,21 @@ void Simulation::World::loadShip(std::string &fileName) {
     }
 
     std::string err;
+
     auto json = json11::Json::parse(buffer, err);
     if (!err.empty()) {
         std::printf("Failed: %s\n", err.c_str());
     } else {
         std::printf("Result: %s\n", json.dump().c_str());
     }
+
     m_Ship.hullThickness = json["hullThickness"].number_value();
     m_WaterDensity = json["waterDensity"].number_value();
     std::cout << "water: " << m_WaterDensity << "\n";
     float hullDensity = materialJson[json["hullMaterial"].string_value().c_str()].number_value();
     std::cout << "HULLMATERIAL: " << json["hullMaterial"].string_value().c_str() << "HULLDENSITY: " << hullDensity << "\n";
     m_Ship.floodingNodeID = json["floodingNode"].string_value().c_str();
+
     bool isHull;
     bool isBulkhead;
     shipFile.close();
@@ -563,12 +566,18 @@ void Simulation::Ship::findOuterNodes() {
 
 float Simulation::Ship::calculateTrim() {
     glm::vec3 difference = m_OuterNodes.at(1)->m_Position - m_OuterNodes.at(0)->m_Position;
-    glm::vec3 flat(difference.x, 0, 0);
+    glm::vec3 flat(difference.x, 0, difference.z);
+    //std::cout << "node1: " << m_OuterNodes.at(1)->toString() << "node 2: " << m_OuterNodes.at(0)->toString() << "\n";
+    //std::cout << "difference: " << glm::to_string(difference) << "flat: " << glm::to_string(flat) << "trim: ";
+    std::cout << acosf(glm::dot(difference, flat) / (glm::length(difference)*glm::length(flat))) * 180 / 3.141f << "\n";
     return acosf(glm::dot(difference,flat)/(glm::length(difference)*glm::length(flat)))*180/3.141f;
 }
 float Simulation::Ship::calculateList() {
     glm::vec3 difference = m_OuterNodes.at(3)->m_Position - m_OuterNodes.at(2)->m_Position;
-    glm::vec3 flat(0, 0, difference.y);
+    glm::vec3 flat(difference.x, 0, difference.z);
+    std::cout << "node1: " << m_OuterNodes.at(1)->toString() << "node 2: " << m_OuterNodes.at(0)->toString() << "\n";
+    std::cout << "difference: " << glm::to_string(difference) << "flat: " << glm::to_string(flat) << "list: ";
+    std::cout << acosf(glm::dot(difference, flat) / (glm::length(difference)*glm::length(flat))) * 180 / 3.141f << "\n";
     return acosf(glm::dot(difference, flat) / (glm::length(difference)*glm::length(flat))) * 180 / 3.141f;
 }
 
@@ -591,6 +600,7 @@ void Simulation::Controller::placeStartingData(){
     file << "Total ship volume: " << std::to_string(m_World.m_Ship.m_TotalVolume) + "\n"; 
     file << "Maximum Water Intake: " << std::to_string(m_World.m_Ship.calculateMaximumWaterAllowed(m_World.m_GravityAcceleration, m_World.m_WaterDensity)) << "\n";
     file << "Hole Node: " << m_World.m_Ship.floodingNodeID << "\n";
+    file << "Water Density: " << m_World.m_WaterDensity << "\n";
     file.close();
 }
 
