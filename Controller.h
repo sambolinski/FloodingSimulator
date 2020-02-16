@@ -23,6 +23,10 @@ namespace Simulation {
 
         float m_ShipMass = 0;
         float m_TotalVolume = 0;
+        float m_MaxFloodableVolume = 0;
+        float m_FloodingBeforeAdjacent = 1; //percentage of node flooding before water flows to adjacent node
+        float maximumWaterAllowed = 0;
+        float m_HoleArea = 0;
         float calculateList();
         float calculateTrim();
         float calculateMaximumWaterAllowed(glm::vec3 &gravity, float &waterDensity);
@@ -57,10 +61,18 @@ namespace Simulation {
         bool floodingStart = false;
         int currentRoundedTime = 0;
         std::map<std::string, PhysicsObjects::PhysicsObject> m_FloodingList; //list of nodes that are currently flooding
-
+        int currentFlooded = 0; //delete after testing
+        float m_WaterlineDepth = 0;
         Controller(Camera &camera, std::string &fileName);
         void update();
         glm::vec3 applyForce();
+
+        //checking simulation progress
+        void checkSimulationProgress();
+        float previousFloodedValue = 0;
+        int sameValueCounter = 0;
+        bool m_SimulationEnded = false;
+        bool m_MarkForEnding = false;
 
         //functions to do with flooding
         void startFlooding(PhysicsObjects::PhysicsObject &firstNode);
@@ -72,6 +84,7 @@ namespace Simulation {
         void updateGraphics();
 
         //data handling
+        int m_TimeBeforeRecording = 5;
         std::string m_FileName;
         void placeStartingData();
         void placeIncrementalData();

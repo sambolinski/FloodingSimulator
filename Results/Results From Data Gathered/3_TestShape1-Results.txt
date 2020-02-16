@@ -1,0 +1,84 @@
+{
+  "hullMaterial": "Steel",
+  "hullThickness": 0.022225,
+  "waterDensity": 1000,
+  "structure": "Ships/TestShape1.txt",
+  "floodingNode": "0-3-0",
+  "floodingBeforeAdjacent": 1,
+  "holeArea": 0.5
+}HBHBH
+HBHBH
+BBBBB
+HBHBH
+BBBBB
+HBHBH
+HBHBH
+-
+HBHBH
+HBABH
+BBBBB
+HBABH
+BBBBB
+HBABH
+HBHBH
+-
+HHHHH
+HHHHH
+HHHHH
+HHHHH
+HHHHH
+HHHHH
+HHHHH
+Total Ship Volume: 336.000000
+Total Floodable volume: 327.110107
+Maximum Water Intake: 266.657959
+Hole Node: 0-3-0
+Water Density: 1000
+-----------------------------------------------------------------------------------------------------
+Time: 5.019996
+List: 4.597227
+Trim: 0.019786
+Current Flooded Volume: 6.640075
+Percentage Flooded: 2.029920
+-----------------------------------------------------------------------------------------------------
+Time: 10.000039
+List: 7.518891
+Trim: 0.019786
+Current Flooded Volume: 12.394581
+Percentage Flooded: 3.789116
+-----------------------------------------------------------------------------------------------------
+Time: 15.000154
+List: 8.744611
+Trim: 0.000000
+Current Flooded Volume: 17.924221
+Percentage Flooded: 5.479568
+-----------------------------------------------------------------------------------------------------
+Time: 20.000267
+List: 10.866656
+Trim: 0.000000
+Current Flooded Volume: 23.128994
+Percentage Flooded: 7.070706
+-----------------------------------------------------------------------------------------------------
+Time: 25.000381
+List: 12.659782
+Trim: 0.019786
+Current Flooded Volume: 28.644672
+Percentage Flooded: 8.756890
+-----------------------------------------------------------------------------------------------------
+Time: 30.000496
+List: 12.659626
+Trim: 0.019786
+Current Flooded Volume: 34.553322
+Percentage Flooded: 10.563209
+-----------------------------------------------------------------------------------------------------
+Time: 35.000610
+List: 14.193919
+Trim: 0.034270
+Current Flooded Volume: 39.630032
+Percentage Flooded: 12.115196
+-----------------------------------------------------------------------------------------------------
+Time: 40.000725
+List: 14.737394
+Trim: 0.000000
+Current Flooded Volume: 40.933056
+Percentage Flooded: 12.513540

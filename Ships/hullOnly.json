@@ -3,5 +3,7 @@
   "hullThickness": 0.022225,
   "waterDensity": 1000,
   "structure": "Ships/hullOnly.txt",
-  "floodingNode": "0-0-0"
+  "floodingNode": "0-0-0",
+  "floodingBeforeAdjacent": 0.5,
+  "holeArea": 0.25
 }

@@ -1,6 +1,7 @@
 #include <glad/glad.h> 
 #include <GLFW/glfw3.h>
 #include <iostream>
+#include <fstream>
 #include "Graphics/Renderer.h"
 #include "Physics/Node.h"
 #include "Controller.h"
@@ -9,6 +10,7 @@
 /*The OpenGL graphics for this project makes extensive use of the tutorial by Joey de Vries
 found here: https://learnopengl.com/
 My work uses and adapts Joey's work allowed under CC BY 4.0 license
+https://creativecommons.org/licenses/by/4.0/legalcode
 */
 
 const unsigned int WINDOW_WIDTH = 1500;
@@ -64,6 +66,7 @@ void processInput(GLFWwindow* window, Simulation::Controller &controller) {
         }
     }
 }
+//taken directly from https://learnopengl.com/code_viewer_gh.php?code=src/1.getting_started/7.3.camera_mouse_zoom/camera_mouse_zoom.cpp
 void processMouseInput(GLFWwindow* window, double xpos, double ypos) {
 
     if (firstMouse) {
@@ -111,15 +114,28 @@ int main() {
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
         return -1;
     }
-    std::string fileName = "twoByThree";
+
+    //Getting the simulation name
+    std::ifstream simulationFile;
+
+    simulationFile.open("simulation.txt");
+    std::string buffer;
+    std::string fileLine;
+    while (std::getline(simulationFile, fileLine)) {
+        buffer += fileLine;
+    }
+    std::string fileName = buffer;
+
     Simulation::Controller controller(camera, fileName);
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     //allows drawing in glfw context whilst resizing
     glfwSetFramebufferSizeCallback(window, framebufferSizeCallback); 
     glfwSetCursorPosCallback(window, processMouseInput);
 
+    controller.startFlooding(controller.m_World.m_Ship.m_NodeList.at(controller.m_World.m_Ship.floodingNodeID));
+    controller.placeStartingData();
     //main game loop, used to update world and to update drawing
-    while (!glfwWindowShouldClose(window)) {
+    while (!glfwWindowShouldClose(window) && !controller.m_SimulationEnded) {
         processInput(window, controller);
         controller.update();
         glfwSwapBuffers(window);

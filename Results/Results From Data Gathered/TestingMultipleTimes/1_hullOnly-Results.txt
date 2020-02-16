@@ -1,0 +1,40 @@
+{
+  "hullMaterial": "Steel",
+  "hullThickness": 0.022225,
+  "waterDensity": 1000,
+  "structure": "Ships/hullOnly.txt",
+  "floodingNode": "0-0-0",
+  "floodingBeforeAdjacent": 0.5,
+  "holeArea": 0.25
+}HH
+HH
+HH
+HH
+-
+HH
+HH
+HH
+HH
+Total Ship Volume: 24.000000
+Total Floodable volume: 22.755400
+Maximum Water Intake: 14.292121
+Hole Node: 0-0-0
+Water Density: 1000
+-----------------------------------------------------------------------------------------------------
+Time: 5.019996
+List: 59.484417
+Trim: 21.664354
+Current Flooded Volume: 3.450295
+Percentage Flooded: 15.162534
+-----------------------------------------------------------------------------------------------------
+Time: 10.000039
+List: 0.586952
+Trim: 89.254829
+Current Flooded Volume: 9.143408
+Percentage Flooded: 40.181267
+-----------------------------------------------------------------------------------------------------
+Time: 15.000154
+List: 3.494170
+Trim: 83.169273
+Current Flooded Volume: 18.308613
+Percentage Flooded: 80.458328

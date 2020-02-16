@@ -55,6 +55,9 @@ void Simulation::World::loadShip(std::string &fileName) {
 
     m_Ship.hullThickness = json["hullThickness"].number_value();
     m_WaterDensity = json["waterDensity"].number_value();
+    m_Ship.m_FloodingBeforeAdjacent = json["floodingBeforeAdjacent"].number_value();
+    m_Ship.m_HoleArea = json["holeArea"].number_value();
+
     std::cout << "water: " << m_WaterDensity << "\n";
     float hullDensity = materialJson[json["hullMaterial"].string_value().c_str()].number_value();
     std::cout << "HULLMATERIAL: " << json["hullMaterial"].string_value().c_str() << "HULLDENSITY: " << hullDensity << "\n";
@@ -132,13 +135,14 @@ void Simulation::World::loadShip(std::string &fileName) {
             int nodeOrientationType = m_Ship.getNodePosition(i->first);
 
             //(8*0.5^3) - ((4*0.5^2)^2*3*)
-            float hullVolume = (pow(nodeToNodeDistanceMetre, 2)*pow(0.5, nodeOrientationType - 1)*0.022225*nodeOrientationType);
+            float hullVolume = (pow(nodeToNodeDistanceMetre, 2)*pow(0.5, nodeOrientationType - 1)* m_Ship.hullThickness*nodeOrientationType);
             hullVolumeTEST += hullVolume; //delete after test
             //i->second.m_EmptyVolumePercentage = ((pow(nodeToNodeDistanceMetre, 3)*pow(0.5,nodeOrientationType))-(pow(nodeToNodeDistanceMetre, 2)*pow(0.5,nodeOrientationType-1))*m_Ship.hullThickness*nodeOrientationType);
             i->second.m_Volume = (pow(nodeToNodeDistanceMetre, 3)*pow(0.5, nodeOrientationType));
             i->second.m_MaxFloodableVolume = i->second.m_Volume - hullVolume; //volume that's floodable is volume of node without the space taken by the hull
             i->second.m_Mass = (hullVolume * i->second.m_Density);
             m_Ship.m_TotalVolume += i->second.m_Volume;
+            m_Ship.m_MaxFloodableVolume += i->second.m_MaxFloodableVolume;
             m_Ship.m_ShipMass += i->second.m_Mass;
             //0.93325
         } else {
@@ -146,6 +150,7 @@ void Simulation::World::loadShip(std::string &fileName) {
             i->second.m_MaxFloodableVolume = i->second.m_Volume;
             i->second.m_Mass = i->second.m_Volume*i->second.m_Density;
             m_Ship.m_TotalVolume += i->second.m_Volume;
+            m_Ship.m_MaxFloodableVolume += i->second.m_MaxFloodableVolume;
         }
         //springs
         xLayer = 0;
@@ -210,6 +215,8 @@ void Simulation::World::loadShip(std::string &fileName) {
         }
     }
     m_Ship.findOuterNodes();
+    m_Ship.maximumWaterAllowed = m_Ship.calculateMaximumWaterAllowed(m_GravityAcceleration, m_WaterDensity);
+    m_Ship.m_NodeList.at(m_Ship.floodingNodeID).m_Object.m_Colour = glm::vec4(1.0f,0.0f,0.0f,1.0f);
     std::cout << "hullVolumeTotal: " << hullVolumeTEST << "\n";
     std::cout << "NODE COUNT: " << m_Ship.m_NodeList.size() << "\n";
     std::cout << "SPRING COUNT: " << m_Ship.m_SpringList.size() << "\n";
@@ -311,11 +318,15 @@ void Simulation::Controller::update() {
     m_Renderer.m_Camera->updateCameraSpeed(m_DeltaTime);
     updatePhysics();
     updateGraphics();
-    
-    if (((int)(m_TotalTimeElapsed)) != currentRoundedTime &&  ((int)(m_TotalTimeElapsed)) % 5 == 0) {
+    std::cout << "Total Time: " << m_TotalTimeElapsed << ", currentFlooded: " << m_World.m_Ship.totalFloodedVolume << ", maybebeforesink: " << m_World.m_Ship.maximumWaterAllowed;
+    std::cout << ", max floodable: " << m_World.m_Ship.m_MaxFloodableVolume << "\n";
+    //std::cout << "number of nodes flooded:" << m_World.m_Ship.numberOfNodesFlooded << ", PercentageFlooded: " << (m_World.m_Ship.totalFloodedVolume / m_World.m_Ship.m_MaxFloodableVolume) * 100 << "\n";
+    if (((int)(m_TotalTimeElapsed)) != currentRoundedTime &&  ((int)(m_TotalTimeElapsed)) % m_TimeBeforeRecording == 0) {
         placeIncrementalData();
         currentRoundedTime = ((int)(m_TotalTimeElapsed));
+        m_SimulationEnded = m_MarkForEnding;
     }
+    checkSimulationProgress();
 }
 
 // Credit: Luke Wren for spring physics
@@ -346,28 +357,37 @@ void Simulation::Controller::updatePhysics() {
 
     //std::cout << "List: " << m_World.m_Ship.calculateList() << "\n";
     //std::cout << "Trim: " << m_World.m_Ship.calculateTrim() << "\n";
-    std::cout << "numberOfNodesFlooded: " << m_World.m_Ship.numberOfNodesFlooded << "PercentageFlooded: " << (m_World.m_Ship.totalFloodedVolume/m_World.m_Ship.m_TotalVolume) * 100 << "\n";
     //GRAVITY IS CURRENTLY DISABLED IF YOU SEE NO Z MOVEMENT
     for (nodeIter i = m_World.m_Ship.m_NodeList.begin(); i != m_World.m_Ship.m_NodeList.end(); i++) {
         if (floodingStart) {
             if (i->second.m_FloodingAllowed) {
                 //std::cout << "numNodesFlooded: " << m_World.m_Ship.numberOfNodesFlooded << "\n";
-                float waterFlowed = (i->second.m_MaxFloodableVolume * 0.001);// / m_World.m_Ship.numberOfNodesFlooded;
-                //float waterFlowed = calculateFloodingAmount(m_DeltaTime) / m_World.m_Ship.numberOfNodesFlooded;
-                //std::cout << i->second.m_ID << ", currentFloodedVolume: " << i->second.m_CurrentFloodedVolume << "\n";
-                m_World.m_Ship.totalFloodedVolume += i->second.flood(waterFlowed);
+                //float waterFlowed = (i->second.m_MaxFloodableVolume)*0.1;// / m_World.m_Ship.numberOfNodesFlooded;
+                float waterFlowed = calculateFloodingAmount(m_DeltaTime) / m_World.m_Ship.numberOfNodesFlooded;
+                //float waterFlowed = calculateFloodingAmount(m_DeltaTime);// / m_World.m_Ship.numberOfNodesFlooded;
+                //std::cout << "WATER FLOWED: " << waterFlowed << "\n";
+                if (i->second.m_Position.y < m_World.m_Ocean.m_Position.y) {
+                    m_World.m_Ship.totalFloodedVolume += i->second.flood(waterFlowed);
+                }
                 //std::cout << "totalFloodedVolume: " << m_World.m_Ship.totalFloodedVolume << "\n";
-                if (i->second.m_CurrentFloodedVolume == i->second.m_MaxFloodableVolume) {
+                if (m_World.m_Ship.numberOfNodesFlooded != currentFlooded) {
+                    currentFlooded = m_World.m_Ship.numberOfNodesFlooded;
+                    //std::cout << "waterlineDepth: " << m_WaterlineDepth << ", number of nodes flooded: " << m_World.m_Ship.numberOfNodesFlooded << ", waterFlowed: " << waterFlowed << "\n";
+                }
+                if (i->second.m_CurrentFloodedVolume >= (i->second.m_MaxFloodableVolume*m_World.m_Ship.m_FloodingBeforeAdjacent)) {
                     if (!i->second.m_IsBulkhead) {
+                        
                         addAdjacentNodes(i);
                     }
-                    i->second.m_FloodingAllowed = false;
-                    m_World.m_Ship.numberOfNodesFlooded--;
+                    if (i->second.m_CurrentFloodedVolume == i->second.m_MaxFloodableVolume) {
+                        i->second.m_FloodingAllowed = false;
+                        m_World.m_Ship.numberOfNodesFlooded--;
+                    }
                 }
             }
+            //std::cout << "number of nodes flooded: " << m_World.m_Ship.numberOfNodesFlooded << ", PercentageFlooded: " << (m_World.m_Ship.totalFloodedVolume / m_World.m_Ship.m_MaxFloodableVolume) * 100 << "\n";
         }
         if (i->second.m_GravityEnabled) {
-            //std::cout << i->second.toString() << ",masss: " << i->second.m_Mass << "\n";
             i->second.applyForce(m_World.m_GravityAcceleration*i->second.m_Mass);
         }
         //Buoyancy
@@ -409,7 +429,7 @@ void Simulation::Controller::updatePhysics() {
     //first for loop used as iterations. Greater number of iterations == greater accuracy but more expensive to compute  
 
     unsigned int counter = 0;
-    for (int k = 0; k < 1; k++) {
+    for (int k = 0; k < 3; k++) {
         for (int i = 0; i < 1; i++) {
             for (springIter j = m_World.m_Ship.m_SpringList.begin(); j != m_World.m_Ship.m_SpringList.end(); j++) {
                 j->second.update();
@@ -483,25 +503,27 @@ float Simulation::Controller::calculateFloodingAmount(float deltaTime) {
     unsigned int counterForFirst = 0; //so first node will be assigned base
     for (nodeIter i = m_World.m_Ship.m_NodeList.begin(); i != m_World.m_Ship.m_NodeList.end(); i++) {
         if (i->second.m_FloodingAllowed) {
-            float nodeDistance = glm::length(m_World.m_Ocean.m_Position - i->second.m_Position);
-            if (counterForFirst == 0) {
+            float nodeDistance = m_World.m_Ocean.m_Position.y - i->second.m_Position.y;
+            //std::cout << i->second.toString() << ", depth: " << (nodeDistance / 100)*m_World.nodeToNodeDistanceMetre << "\n";
+            if (counterForFirst == 0 && nodeDistance > 0) {
                 waterlineDepth = nodeDistance;
+                counterForFirst++;
             } else {
-                if (nodeDistance < waterlineDepth) {
+                if (nodeDistance < waterlineDepth && nodeDistance > 0) {
                     waterlineDepth = nodeDistance;
                 }
             }
-            counterForFirst++;
         }
     }
-
+    m_WaterlineDepth = (waterlineDepth / 100)*m_World.nodeToNodeDistanceMetre;
+    //std::cout << "Shallowest Depth: " << m_WaterlineDepth << "\n";
+    //std::cout << "-----------------------------------------\n";
     //Torricelli's law
     // velocity of water through a hole = sqrt(2*g*h)
     // calibrated water height = waterlineDepth / 100 * nodeToNodeDistanceMetre
     // amount of water = area * velocity * dt
     float waterVelocity = sqrt(2*glm::length(m_World.m_GravityAcceleration) * (waterlineDepth/100)*m_World.nodeToNodeDistanceMetre);
-    float area = 0.0025;
-    return area * waterVelocity * deltaTime;
+    return m_World.m_Ship.m_HoleArea * waterVelocity * deltaTime;
 }
 
 void Simulation::Controller::startFlooding(PhysicsObjects::PhysicsObject &physicsObject) {
@@ -567,17 +589,11 @@ void Simulation::Ship::findOuterNodes() {
 float Simulation::Ship::calculateTrim() {
     glm::vec3 difference = m_OuterNodes.at(1)->m_Position - m_OuterNodes.at(0)->m_Position;
     glm::vec3 flat(difference.x, 0, difference.z);
-    //std::cout << "node1: " << m_OuterNodes.at(1)->toString() << "node 2: " << m_OuterNodes.at(0)->toString() << "\n";
-    //std::cout << "difference: " << glm::to_string(difference) << "flat: " << glm::to_string(flat) << "trim: ";
-    std::cout << acosf(glm::dot(difference, flat) / (glm::length(difference)*glm::length(flat))) * 180 / 3.141f << "\n";
     return acosf(glm::dot(difference,flat)/(glm::length(difference)*glm::length(flat)))*180/3.141f;
 }
 float Simulation::Ship::calculateList() {
     glm::vec3 difference = m_OuterNodes.at(3)->m_Position - m_OuterNodes.at(2)->m_Position;
     glm::vec3 flat(difference.x, 0, difference.z);
-    std::cout << "node1: " << m_OuterNodes.at(1)->toString() << "node 2: " << m_OuterNodes.at(0)->toString() << "\n";
-    std::cout << "difference: " << glm::to_string(difference) << "flat: " << glm::to_string(flat) << "list: ";
-    std::cout << acosf(glm::dot(difference, flat) / (glm::length(difference)*glm::length(flat))) * 180 / 3.141f << "\n";
     return acosf(glm::dot(difference, flat) / (glm::length(difference)*glm::length(flat))) * 180 / 3.141f;
 }
 
@@ -590,15 +606,22 @@ float Simulation::Ship::calculateMaximumWaterAllowed(glm::vec3 &gravity, float &
 
 void Simulation::Controller::placeStartingData(){
     //copied data https://stackoverflow.com/questions/10195343/copy-a-file-in-a-sane-safe-and-efficient-way
-    std::ifstream  shapeDataFile("Ships/" + m_FileName + ".txt", std::ios::binary);
+    std::ifstream  shapeDataFile("Ships/" + m_FileName + ".json", std::ios::binary);
+    std::ifstream  shapeShapeFile("Ships/" + m_FileName + ".txt", std::ios::binary);
     std::ofstream  destinationfile("Results/"+m_FileName+"-Results.txt", std::ios::binary);
     destinationfile << shapeDataFile.rdbuf();
+    std::ofstream fileFirst;
+    fileFirst.open("Results/" + m_FileName + "-Results.txt", std::ios_base::app);
+    fileFirst << "\n";
+    fileFirst.close();
+    destinationfile << shapeShapeFile.rdbuf();
     destinationfile.close();
     std::ofstream file;
     file.open("Results/" + m_FileName + "-Results.txt", std::ios_base::app);
     file << "\n";
-    file << "Total ship volume: " << std::to_string(m_World.m_Ship.m_TotalVolume) + "\n"; 
-    file << "Maximum Water Intake: " << std::to_string(m_World.m_Ship.calculateMaximumWaterAllowed(m_World.m_GravityAcceleration, m_World.m_WaterDensity)) << "\n";
+    file << "Total Ship Volume: " << std::to_string(m_World.m_Ship.m_TotalVolume) + "\n";
+    file << "Total Floodable volume: " << std::to_string(m_World.m_Ship.m_MaxFloodableVolume) + "\n";
+    file << "Maximum Water Intake: " << std::to_string(m_World.m_Ship.maximumWaterAllowed) << "\n";
     file << "Hole Node: " << m_World.m_Ship.floodingNodeID << "\n";
     file << "Water Density: " << m_World.m_WaterDensity << "\n";
     file.close();
@@ -608,13 +631,24 @@ void Simulation::Controller::placeIncrementalData() {
     std::ofstream file;
     file.open("Results/" + m_FileName + "-Results.txt", std::ios_base::app);
     file << "-----------------------------------------------------------------------------------------------------\n";
-    file << "Time: " << m_TotalTimeElapsed << "\n";
-    file << "List: " << m_World.m_Ship.calculateList() << "\n";
-    file << "Trim: " << m_World.m_Ship.calculateTrim() << "\n";
-    file << "Current Flooded Volume: " << m_World.m_Ship.totalFloodedVolume << "\n";
+    file << "Time: " << std::to_string(m_TotalTimeElapsed) << "\n";
+    file << "List: " << std::to_string(m_World.m_Ship.calculateList()) << "\n";
+    file << "Trim: " << std::to_string(m_World.m_Ship.calculateTrim()) << "\n";
+    file << "Current Flooded Volume: " << std::to_string(m_World.m_Ship.totalFloodedVolume) << "\n";
+    file << "Percentage Flooded: " << std::to_string((m_World.m_Ship.totalFloodedVolume / m_World.m_Ship.m_MaxFloodableVolume) * 100) << "\n";
     file.close();
 }
-
+void Simulation::Controller::checkSimulationProgress() {
+    if (m_World.m_Ship.totalFloodedVolume == previousFloodedValue) {
+        sameValueCounter++;
+        previousFloodedValue = m_World.m_Ship.totalFloodedVolume;
+    } else {
+        sameValueCounter = 0;
+        previousFloodedValue = m_World.m_Ship.totalFloodedVolume;
+    }
+    std::cout << "sameValueCounter: " << sameValueCounter << "\n";
+    m_MarkForEnding = sameValueCounter > 5 || m_World.m_Ship.totalFloodedVolume > m_World.m_Ship.maximumWaterAllowed;
+}
 //FOR DEBUG
 glm::vec3 Simulation::Ship::averagePosition() {
     typedef std::map<std::string, PhysicsObjects::PhysicsObject>::iterator nodeIter;

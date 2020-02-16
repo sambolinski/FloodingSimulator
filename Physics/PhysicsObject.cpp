@@ -107,19 +107,9 @@ float  PhysicsObjects::PhysicsObject::flood(float amount) {
 }
 //Credit: Luke Wren
 void PhysicsObjects::PhysicsObject::update(float deltaTime) {
-
-    
     glm::vec3 lastPosition = m_Position;
     float calibration = 100 / 2;
-    m_Position += (m_Position - m_LastPosition) + (m_Force * calibration) * (deltaTime * deltaTime / m_Mass);
+    m_Position += (m_Position - m_LastPosition) + (m_Force * calibration) * (deltaTime * deltaTime/ m_Mass);
     m_Velocity = ((m_Position - m_LastPosition) / calibration) / deltaTime;
     m_LastPosition = lastPosition;
-    /*
-    glm::vec3 newPosition = m_Position + (m_Velocity * deltaTime) + (m_Acceleration)*(deltaTime*deltaTime*0.5f);
-    glm::vec3 newAcceleration = m_Force/m_Mass;
-    glm::vec3 newVelocity = m_Velocity + (m_Acceleration + newAcceleration)*(deltaTime*0.5f);
-    m_Position = newPosition;
-    m_Velocity = newVelocity;
-    m_Acceleration = newAcceleration;
-    */
 }
