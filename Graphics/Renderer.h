@@ -9,6 +9,7 @@
 #include <vector>
 #include <map>
 #include <string>
+//made using LearnOpenGL tutorial
 class Renderer {
 public:
     bool firstMouse = true;

@@ -1,4 +1,5 @@
 #include "Object.h"
+
 Object::Object(std::vector<float> vertices, std::vector<unsigned int> indices) {
     m_Vertices = vertices;
     m_Indices = indices;
@@ -11,6 +12,8 @@ void Object::InitialiseObjectData() {
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
 }
+
+//Renders the shape depending on the shader, if mode = 2 then rendered as wireframe, if 3, draws rendered shape
 void Object::render(Shader &shader) {
     m_VertexBufferObject.bind();
     m_VertexArrayObject.bind(); 

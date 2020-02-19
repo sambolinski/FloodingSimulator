@@ -3,6 +3,9 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <GLFW/glfw3.h>
+
+//Directly taken from LearnOpenGL and adapted
+//https://learnopengl.com/code_viewer_gh.php?code=includes/learnopengl/camera.h
 class Camera {
 public:
     float m_Yaw = -90.0f;
@@ -10,6 +13,7 @@ public:
     float m_Fov = 45.0f;
     const float m_CameraSpeedCoefficient = 2.5;
     float m_CameraSpeed = 0;
+    //used from determining camera angles
     glm::vec3 m_CameraPos = glm::vec3(0.0f, 0.5f, 5.0f);
     glm::vec3 m_CameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
     glm::vec3 m_CameraUp = glm::vec3(0.0f, 1.0f, 0.0f);

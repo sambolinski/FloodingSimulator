@@ -2,6 +2,7 @@
 #define ELEMENTBUFFEROBJECT_H
 #include <glad/glad.h> 
 #include <vector>
+//Made using LearnOpenGL, used when rendering indices as well as vertices, more efficient rendering
 class ElementBufferObject {
 private:
     unsigned int m_ID;

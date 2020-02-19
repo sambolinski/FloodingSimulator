@@ -4,6 +4,7 @@ Node::Node() {
     m_Mass = 0.5f;
     m_Scale = glm::vec3(0.01f, 0.01f, 0.01f);
     m_Object.m_Mode = 3;
+    //Cube vertices and indices from LearnOpenGL
     m_Object.m_Vertices = {
         -0.5f, -0.5f, -0.5f,
          0.5f, -0.5f, -0.5f,
@@ -54,6 +55,7 @@ Node::Node() {
          20, 21, 22, 
          20, 22, 23
     };
+    //Shaders from LearnOpenGL
     m_Object.m_VertexShaderSource = "#version 330 core\n"
         "layout (location = 0) in vec3 aPos;\n"
         "uniform mat4 model;\n"

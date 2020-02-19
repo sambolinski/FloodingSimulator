@@ -20,13 +20,15 @@ namespace Simulation {
         int getNodePosition(const std::string &objectCoord);
         std::string hullType;
         std::vector<PhysicsObjects::PhysicsObject*> m_OuterNodes;
-
+        //data about ship
         float m_ShipMass = 0;
         float m_TotalVolume = 0;
         float m_MaxFloodableVolume = 0;
         float m_FloodingBeforeAdjacent = 1; //percentage of node flooding before water flows to adjacent node
         float maximumWaterAllowed = 0;
         float m_HoleArea = 0;
+
+        //Ship calculations
         float calculateList();
         float calculateTrim();
         float calculateMaximumWaterAllowed(glm::vec3 &gravity, float &waterDensity);
@@ -35,8 +37,8 @@ namespace Simulation {
         glm::vec3 averagePosition();
     };
     struct World {
-        const float nodeToNodeDistanceMetre = 2;
-        glm::vec3 m_GravityAcceleration = glm::vec3(0.0f,-9.81f,0.0f);
+        const float nodeToNodeDistanceMetre = 2; //used for calibration, distances  between node is set to this value in meters
+        glm::vec3 m_GravityAcceleration = glm::vec3(0.0f,-9.81f,0.0f); // m/s^2 acceleration
         Simulation::Ship m_Ship;
         std::map<std::string, PhysicsObjects::PhysicsObject> m_OtherRenderedObjects;
 
@@ -57,11 +59,10 @@ namespace Simulation {
         float m_DeltaTime = 0.0f;
         float m_TotalTimeElapsed = 0;
         float m_LastTime = 0.0f;
-        bool incrementalFlooding = false; //for testing incremental flooding only
+        bool incrementalFlooding = false; 
         bool floodingStart = false;
         int currentRoundedTime = 0;
-        std::map<std::string, PhysicsObjects::PhysicsObject> m_FloodingList; //list of nodes that are currently flooding
-        int currentFlooded = 0; //delete after testing
+        int currentFlooded = 0; 
         float m_WaterlineDepth = 0;
         Controller(Camera &camera, std::string &fileName);
         void update();

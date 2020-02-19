@@ -2,6 +2,8 @@
 #define VERTEXBUFFEROBJECT_H
 #include <glad/glad.h> 
 #include <vector>
+//made using LearnOpenGL tutorial
+//buffer which contains data about the vertices
 class VertexBufferObject {
 private:
     unsigned int m_ID;

@@ -7,7 +7,7 @@ namespace PhysicsObjects {
     public:
         std::string m_Type;
         std::string m_ID;
-        Object m_Object;
+        Object m_Object; //stores render data
         glm::vec3 m_Position;
         glm::vec3 m_LastPosition;
         glm::vec3 m_Velocity;

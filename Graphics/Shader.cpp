@@ -2,6 +2,7 @@
 
 Shader::Shader() {
 }
+//loads the shaders used, shaders are in the object.h for that particular render object.
 void Shader::loadShader(const char* vertexShaderSource, const char* fragmentShaderSource) {
     unsigned int vertexShader;
     unsigned int fragmentShader;
@@ -20,6 +21,7 @@ void Shader::loadShader(const char* vertexShaderSource, const char* fragmentShad
     glDeleteShader(vertexShader);
     glDeleteShader(fragmentShader);
 }
+//same as the other load shader but also includes geometry shader
 void Shader::loadShader(const char* vertexShaderSource, const char* fragmentShaderSource, const char* geometryShaderSource) {
     unsigned int vertexShader;
     unsigned int fragmentShader;

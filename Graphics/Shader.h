@@ -4,6 +4,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <string>
+//made using LearnOpenGL tutorial
 class Shader {
 public:
     unsigned int m_ID;
@@ -12,6 +13,7 @@ public:
     void loadShader(const char* vertexShaderSource, const char* fragmentShaderSource, const char* geometryShaderSource);
     void use();
     void deleteShader();
+    //functions to change the values in shader
     void setValue(const std::string &uniformName, const int value);
     void setValue(const std::string &uniformName, const float value);
     void setValue(const std::string &uniformName, const glm::vec2 &value);

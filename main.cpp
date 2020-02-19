@@ -11,19 +11,20 @@
 found here: https://learnopengl.com/
 My work uses and adapts Joey's work allowed under CC BY 4.0 license
 https://creativecommons.org/licenses/by/4.0/legalcode
+Joey's Twitter: https://twitter.com/JoeyDeVriez
 */
-
 const unsigned int WINDOW_WIDTH = 1500;
 const unsigned int WINDOW_HEIGHT  = 900;
 double lastX = WINDOW_WIDTH/2;
 double lastY = WINDOW_HEIGHT/2;
 bool firstMouse = true;
 Camera camera;
-
+//Method taken directly from the tutorial
 void framebufferSizeCallback(GLFWwindow* window, int width, int height) {
     glViewport(0, 0, width, height);
 }
 
+//Method taken directly from the tutorial except for keys E, R, T, P
 void processInput(GLFWwindow* window, Simulation::Controller &controller) {
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
         camera.m_CameraPos += camera.m_CameraSpeed * camera.m_CameraFront;
@@ -116,6 +117,7 @@ int main() {
     }
 
     //Getting the simulation name
+    //////////////////////////////////////////////////////////////////////
     std::ifstream simulationFile;
 
     simulationFile.open("simulation.txt");
@@ -125,6 +127,8 @@ int main() {
         buffer += fileLine;
     }
     std::string fileName = buffer;
+    ///////////////////////////////////////////////////////////////////////
+
 
     Simulation::Controller controller(camera, fileName);
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
@@ -134,6 +138,7 @@ int main() {
 
     controller.startFlooding(controller.m_World.m_Ship.m_NodeList.at(controller.m_World.m_Ship.floodingNodeID));
     controller.placeStartingData();
+
     //main game loop, used to update world and to update drawing
     while (!glfwWindowShouldClose(window) && !controller.m_SimulationEnded) {
         processInput(window, controller);
@@ -144,6 +149,3 @@ int main() {
     glfwTerminate();
     return 0;
 }
-
-
-

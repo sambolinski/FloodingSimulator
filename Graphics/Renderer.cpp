@@ -3,10 +3,12 @@
 #include <iostream>
 Renderer::Renderer() {}
 
+//used for rendering cube and springs
 void Renderer::render(std::map<std::string,PhysicsObjects::PhysicsObject> &physicsObjects){
     std::string previousType = "NaN";
     std::map<std::string, PhysicsObjects::PhysicsObject>::iterator objectPointer;
     for (objectPointer = physicsObjects.begin(); objectPointer != physicsObjects.end(); objectPointer++) {
+        //since dhaders are identical for nodes, only load the shader once per rendering
         if (objectPointer->second.m_Type == previousType) {
         } else {
             m_Shader.deleteShader();
@@ -16,7 +18,7 @@ void Renderer::render(std::map<std::string,PhysicsObjects::PhysicsObject> &physi
         int vertexColourLocation = glGetUniformLocation(m_Shader.m_ID, "colour");
         glUniform4f(vertexColourLocation, objectPointer->second.m_Object.m_Colour.x, objectPointer->second.m_Object.m_Colour.y, objectPointer->second.m_Object.m_Colour.z, objectPointer->second.m_Object.m_Colour.a);
 
-        //Matrices so everything appears in window properly
+        //Matrices so everything appears in window properly, these are passed to the dhader
         glm::mat4 model = glm::mat4(1.0f);
         glm::mat4 view = glm::mat4(1.0f);
         glm::mat4 projection = glm::mat4(1.0f);
@@ -42,8 +44,9 @@ void Renderer::render(std::map<std::string,PhysicsObjects::PhysicsObject> &physi
         previousType = (objectPointer->second.m_Type);
     }
 }
+//used to render the springs
 void Renderer::renderSprings(std::map<std::string, PhysicsObjects::PhysicsSpring> &springs) {
-    //USE SHADER FOR LINE DRAWING
+    
     std::map<std::string, PhysicsObjects::PhysicsSpring>::iterator objectPointer;
     for (objectPointer = springs.begin(); objectPointer != springs.end(); objectPointer++) {
         if (objectPointer == springs.begin()) {
@@ -78,8 +81,6 @@ void Renderer::renderSprings(std::map<std::string, PhysicsObjects::PhysicsSpring
 
         m_Shader.setValue("model", model);
         objectPointer->second.m_RenderObject.render(m_Shader);
-        
-
     }
 }
 void Renderer::initialiseSceneRender() {
@@ -88,6 +89,7 @@ void Renderer::initialiseSceneRender() {
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
 
+//Clears the scene for each render
 void Renderer::clear() {
     glClearColor(0.4f, 0.4f, 0.4f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

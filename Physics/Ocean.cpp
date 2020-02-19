@@ -15,6 +15,7 @@ Ocean::Ocean() {
         0, 1, 2,
         1, 2, 3
     };
+    //Shaders gathered from LearnOpenGL
     m_Object.m_VertexShaderSource = "#version 330 core\n"
         "layout (location = 0) in vec3 aPos;\n"
         "uniform mat4 model;\n"
