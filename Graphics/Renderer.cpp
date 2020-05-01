@@ -2,6 +2,11 @@
 #include <string>
 #include <iostream>
 Renderer::Renderer() {}
+//#CONTRIBUTED CODE
+//url: https://learnopengl.com/Getting-started/Coordinate-Systems
+//Author: Joey de Vries
+//Licensing: CC BY 4.0 license https://creativecommons.org/licenses/by/4.0/legalcode
+//Comment: Class made with help from tutorial, not directly taken. Code adapted. Begin/end shows what I used from tutorial
 
 //used for rendering cube and springs
 void Renderer::render(std::map<std::string,PhysicsObjects::PhysicsObject> &physicsObjects){
@@ -15,6 +20,7 @@ void Renderer::render(std::map<std::string,PhysicsObjects::PhysicsObject> &physi
             m_Shader.loadShader(objectPointer-> second.m_Object.m_VertexShaderSource, objectPointer->second.m_Object.m_FragmentShaderSource);
             m_Shader.use();
         }
+        //Begin contributed code
         int vertexColourLocation = glGetUniformLocation(m_Shader.m_ID, "colour");
         glUniform4f(vertexColourLocation, objectPointer->second.m_Object.m_Colour.x, objectPointer->second.m_Object.m_Colour.y, objectPointer->second.m_Object.m_Colour.z, objectPointer->second.m_Object.m_Colour.a);
 
@@ -42,6 +48,7 @@ void Renderer::render(std::map<std::string,PhysicsObjects::PhysicsObject> &physi
         objectPointer->second.m_Object.render(m_Shader);
 
         previousType = (objectPointer->second.m_Type);
+        //End contributed code
     }
 }
 //used to render the springs
@@ -54,6 +61,7 @@ void Renderer::renderSprings(std::map<std::string, PhysicsObjects::PhysicsSpring
             m_Shader.loadShader(objectPointer->second.m_RenderObject.m_VertexShaderSource, objectPointer->second.m_RenderObject.m_FragmentShaderSource);
             m_Shader.use();
         }
+        //Begin contributed code
 
         int vertexColourLocation = glGetUniformLocation(m_Shader.m_ID, "colour");
         glm::vec4 mixedColour = (objectPointer->second.m_FirstObject->m_Object.m_Colour + objectPointer->second.m_SecondObject->m_Object.m_Colour)*0.5f;
@@ -81,8 +89,10 @@ void Renderer::renderSprings(std::map<std::string, PhysicsObjects::PhysicsSpring
 
         m_Shader.setValue("model", model);
         objectPointer->second.m_RenderObject.render(m_Shader);
+        //End contributed code
     }
 }
+//Begin contributed code
 void Renderer::initialiseSceneRender() {
     glEnable(GL_DEPTH_TEST); 
     glEnable(GL_BLEND);
@@ -95,3 +105,4 @@ void Renderer::clear() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glFlush();
 }
+//End contributed code

@@ -1,5 +1,14 @@
 #include "VertexBufferObject.h"
 #include <iostream>
+//Made using LearnOpenGL
+//#CONTRIBUTED CODE
+//url: https://learnopengl.com/Getting-started/Hello-Triangle, https://www.youtube.com/watch?v=bTHqmzjm2UI
+//Author: Joey de Vries, The Cherno
+//Licensing: CC BY 4.0 license https://creativecommons.org/licenses/by/4.0/legalcode
+//Comment: Class made with help from tutorial, not directly taken. Code adapted. Used youtube tutorial to help with abstraction
+
+
+//used to have multiple data about a vetex in one buffer, such as position, colour, texture coordinate
 //generates the buffer, adds teh vertices and binds the buffer
 VertexBufferObject::VertexBufferObject(std::vector<float> &vertices) {
     glGenBuffers(1, &m_ID);

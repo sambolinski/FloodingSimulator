@@ -6,7 +6,7 @@
 #include <vector>
 
 //Stores render data about objects.
-//Made using LearnOpenGL tutorial
+
 class Object {
 public:
     std::vector<float> m_Vertices;

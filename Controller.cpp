@@ -403,7 +403,12 @@ void Simulation::Controller::updatePhysics() {
 
     //Spring physics update
     //first for loop used as iterations. Greater number of iterations == greater accuracy but more expensive to compute  
-    //Made using Luke Wrens code in SHip Sandbox except the update render object
+    //#CONTRIBUTED CODE
+    //url: https://github.com/Wren6991/Ship-Sandbox/blob/master/phys.cpp
+    //Author: Luke Wren
+    //Licensing: 
+    //Comment: adapted to work with my classes
+    //Begin
     unsigned int counter = 0;
     for (int k = 0; k < 3; k++) {
         for (int i = 0; i < 1; i++) {
@@ -419,6 +424,7 @@ void Simulation::Controller::updatePhysics() {
             }
         }
     }
+    //End
 }
 //This function gets the adjacent nodes of the selected nodes and assigns them to be able to be flooded.
 void Simulation::Controller::addAdjacentNodes(std::map<std::string, PhysicsObjects::PhysicsObject>::iterator node) {

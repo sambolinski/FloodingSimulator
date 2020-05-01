@@ -1,7 +1,12 @@
 #include "PhysicsObject.h"
 #include <iostream>
 
-//Credit: Luke Wren in "Ship Sandbox"
+//#CONTRIBUTED CODE
+//url: https://github.com/Wren6991/Ship-Sandbox/blob/master/phys.cpp
+//Author: Luke Wren
+//Licensing: 
+//Comment: Minor adaptions to work to work with GLM and my classes
+//Begin
 void PhysicsObjects::PhysicsSpring::update() {
     glm::vec3 delta = m_SecondObject->m_Position - m_FirstObject->m_Position;
     float deltaLength = glm::length(delta);
@@ -9,15 +14,21 @@ void PhysicsObjects::PhysicsSpring::update() {
     m_FirstObject->m_Position -= delta * 0.5f;
     m_SecondObject->m_Position += delta * 0.5f;
 }
+//End
 
-//Credit: Luke Wren in "Ship Sandbox"
+//#CONTRIBUTED CODE
+//url: https://github.com/Wren6991/Ship-Sandbox/blob/master/phys.cpp
+//Author: Luke Wren
+//Licensing: 
+//Comment: Minor adaptions to work with GLM and my classes
+//Begin
 void PhysicsObjects::PhysicsSpring::applyDamping(float &dampingAmount) {
     glm::vec3 springDifference = glm::normalize(m_FirstObject->m_Position - m_SecondObject->m_Position);
     springDifference *= glm::dot((m_FirstObject->m_Position - m_FirstObject->m_LastPosition - (m_SecondObject->m_Position - m_SecondObject->m_LastPosition)), springDifference)*dampingAmount;
     m_FirstObject->m_LastPosition += springDifference;
     m_SecondObject->m_LastPosition -= springDifference;
 }
-
+//End
 void PhysicsObjects::PhysicsSpring::initRenderObject() {
     m_RenderObject.m_Mode = 2;
     m_RenderObject.m_Vertices = {
@@ -28,7 +39,13 @@ void PhysicsObjects::PhysicsSpring::initRenderObject() {
     m_RenderObject.m_Indices = {
         0,1
     };
-    //Shaders from LearnOpenGL
+
+    //#CONTRIBUTED CODE
+    //url: https://learnopengl.com/Getting-started/Shaders
+    //Author: Joey de Vries
+    //Licensing: CC BY 4.0 license https://creativecommons.org/licenses/by/4.0/legalcode
+    //Comment: taken directly from the tutorial
+    //Begin
     m_RenderObject.m_VertexShaderSource = "#version 330 core\n"
         "layout (location = 0) in vec3 aPos;\n"
         "uniform mat4 model;\n"
@@ -53,6 +70,7 @@ void PhysicsObjects::PhysicsSpring::initRenderObject() {
         "{\n"
         "   FragColor = colour;\n"
         "}\n\0";
+    //End
     m_RenderObject.InitialiseObjectData();
 }
 //updates the spring graphics made on the two connected nodes
@@ -104,7 +122,12 @@ float  PhysicsObjects::PhysicsObject::flood(float amount) {
         return toReturn;
     }
 }
-//Credit: Luke Wren in "Ship Sandbox"
+//#CONTRIBUTED CODE
+//url: https://github.com/Wren6991/Ship-Sandbox/blob/master/phys.cpp
+//Author: Luke Wren
+//Licensing: 
+//Comment: Minor adaptions to work with my classes, and to work with my calibration settings
+//Begin
 void PhysicsObjects::PhysicsObject::update(float deltaTime) {
     glm::vec3 lastPosition = m_Position;
     float calibration = 100 / 2;
@@ -112,3 +135,4 @@ void PhysicsObjects::PhysicsObject::update(float deltaTime) {
     m_Velocity = ((m_Position - m_LastPosition) / calibration) / deltaTime;
     m_LastPosition = lastPosition;
 }
+//End

@@ -2,6 +2,12 @@
 
 Shader::Shader() {
 }
+//#CONTRIBUTED CODE
+//url: https://learnopengl.com/Getting-started/Shaders, and https://www.youtube.com/watch?v=71BLZwRGUJE
+//Author: Joey de Vries, The Cherno
+//Licensing: CC BY 4.0 license https://creativecommons.org/licenses/by/4.0/legalcode (for LearnOpenGL)
+//Comment: Class made with help from tutorial and the youtube tutorial, not directly taken. Code adapted
+
 //loads the shaders used, shaders are in the object.h for that particular render object.
 void Shader::loadShader(const char* vertexShaderSource, const char* fragmentShaderSource) {
     unsigned int vertexShader;
@@ -21,7 +27,15 @@ void Shader::loadShader(const char* vertexShaderSource, const char* fragmentShad
     glDeleteShader(vertexShader);
     glDeleteShader(fragmentShader);
 }
+
+//#CONTRIBUTED CODE
+//url: https://learnopengl.com/Getting-started/Shaders, and https://www.youtube.com/watch?v=71BLZwRGUJE
+//Author: Joey de Vries, The Cherno
+//Licensing: CC BY 4.0 license https://creativecommons.org/licenses/by/4.0/legalcode (for LearnOpenGL)
+//Comment: Class made with help from tutorial and the youtube tutorial, not directly taken. Code adapted
+
 //same as the other load shader but also includes geometry shader
+//Begin
 void Shader::loadShader(const char* vertexShaderSource, const char* fragmentShaderSource, const char* geometryShaderSource) {
     unsigned int vertexShader;
     unsigned int fragmentShader;
@@ -53,6 +67,8 @@ void Shader::use() {
 void Shader::deleteShader() {
     glDeleteProgram(m_ID);
 }
+//End
+//Begin -This section directly taken
 void Shader::setValue(const std::string &uniformName, const int value) {
     glUniform1i(glGetUniformLocation(m_ID, uniformName.c_str()), value);
 }
@@ -77,3 +93,4 @@ void Shader::setValue(const std::string &uniformName, const glm::mat3 &value) {
 void Shader::setValue(const std::string &uniformName, const glm::mat4 &value) {
     glUniformMatrix4fv(glGetUniformLocation(m_ID, uniformName.c_str()), 1, GL_FALSE, &value[0][0]);
 }
+//End

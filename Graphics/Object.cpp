@@ -1,5 +1,12 @@
 #include "Object.h"
 
+//#CONTRIBUTED CODE
+//url: https://learnopengl.com/Getting-started/Hello-Window
+//Author: Joey de Vries
+//Licensing: CC BY 4.0 license https://creativecommons.org/licenses/by/4.0/legalcode
+//Comment: Used the tutorial to help structure and learn how to render, but adapted for my project
+//Begin
+
 Object::Object(std::vector<float> vertices, std::vector<unsigned int> indices) {
     m_Vertices = vertices;
     m_Indices = indices;
@@ -27,3 +34,4 @@ void Object::render(Shader &shader) {
     m_VertexArrayObject.unbind();
     m_ElementBufferObject.unbind();
 }
+//End

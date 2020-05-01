@@ -15,7 +15,13 @@ Ocean::Ocean() {
         0, 1, 2,
         1, 2, 3
     };
+    //#CONTRIBUTED CODE
+    //url: https://learnopengl.com/Getting-started/Shaders
+    //Author: Joey de Vries
+    //Licensing: CC BY 4.0 license https://creativecommons.org/licenses/by/4.0/legalcode
+    //Comment: Method taken directly from the tutorial
     //Shaders gathered from LearnOpenGL
+    //Begin
     m_Object.m_VertexShaderSource = "#version 330 core\n"
         "layout (location = 0) in vec3 aPos;\n"
         "uniform mat4 model;\n"
@@ -32,5 +38,6 @@ Ocean::Ocean() {
         "{\n"
         "   FragColor = colour;\n"
         "}\n\0";
+    //End
     m_Object.InitialiseObjectData(); 
 }

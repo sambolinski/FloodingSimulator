@@ -13,18 +13,37 @@ My work uses and adapts Joey's work allowed under CC BY 4.0 license
 https://creativecommons.org/licenses/by/4.0/legalcode
 Joey's Twitter: https://twitter.com/JoeyDeVriez
 */
+
+//#CONTRIBUTED CODE
+//url: https://learnopengl.com/Getting-started/Hello-Window
+//Author: Joey de Vries
+//Licensing: CC BY 4.0 license https://creativecommons.org/licenses/by/4.0/legalcode
+//Comment: Variables taken directly
+//Begin
 const unsigned int WINDOW_WIDTH = 1500;
 const unsigned int WINDOW_HEIGHT  = 900;
 double lastX = WINDOW_WIDTH/2;
 double lastY = WINDOW_HEIGHT/2;
 bool firstMouse = true;
-Camera camera;
+
+
+
+
+
 //Method taken directly from the tutorial
 void framebufferSizeCallback(GLFWwindow* window, int width, int height) {
     glViewport(0, 0, width, height);
 }
+//End
 
-//Method taken directly from the tutorial except for keys E, R, T, P
+Camera camera;
+
+//#CONTRIBUTED CODE
+//url: https://learnopengl.com/Getting-started/Camera
+//Author: Joey de Vries
+//Licensing: CC BY 4.0 license https://creativecommons.org/licenses/by/4.0/legalcode
+//Comment: Method taken directly from the tutorial except for keys E, R, T, P
+//Begin
 void processInput(GLFWwindow* window, Simulation::Controller &controller) {
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
         camera.m_CameraPos += camera.m_CameraSpeed * camera.m_CameraFront;
@@ -44,6 +63,7 @@ void processInput(GLFWwindow* window, Simulation::Controller &controller) {
     if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) {
         camera.m_CameraPos -= camera.m_CameraUp *camera.m_CameraSpeed;
     }
+    //End
     if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) {
         //first node full water applied
         controller.m_World.m_Ship.m_NodeList.at("0-0-0").flood(controller.m_World.m_Ship.m_NodeList.at("0-0-0").m_MaxFloodableVolume);
@@ -67,7 +87,13 @@ void processInput(GLFWwindow* window, Simulation::Controller &controller) {
         }
     }
 }
-//taken directly from https://learnopengl.com/code_viewer_gh.php?code=src/1.getting_started/7.3.camera_mouse_zoom/camera_mouse_zoom.cpp
+
+//#CONTRIBUTED CODE
+//url: https://learnopengl.com/code_viewer_gh.php?code=src/1.getting_started/7.3.camera_mouse_zoom/camera_mouse_zoom.cpp
+//Author: Joey de Vries
+//Licensing: CC BY 4.0 license https://creativecommons.org/licenses/by/4.0/legalcode
+//Comment: Method taken directly
+//Begin
 void processMouseInput(GLFWwindow* window, double xpos, double ypos) {
 
     if (firstMouse) {
@@ -100,9 +126,17 @@ void processMouseInput(GLFWwindow* window, double xpos, double ypos) {
     front.z = sin(glm::radians(camera.m_Yaw)) * cos(glm::radians(camera.m_Pitch));
     camera.m_CameraFront = glm::normalize(front);
 }
+//End
+
 
 // main function sets up main window using GLFW
+//#CONTRIBUTED CODE
+//url: https://learnopengl.com/Getting-started/Hello-Window
+//Author: Joey de Vries
+//Licensing: CC BY 4.0 license https://creativecommons.org/licenses/by/4.0/legalcode
+//Comment: Methods to get window set up, glfw calls and GLAD calls taken from tutorial denoted by begin and end. Rest is made by me
 int main() {
+    //Begin
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
@@ -115,6 +149,7 @@ int main() {
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
         return -1;
     }
+    //End
 
     //Getting the simulation name
     //////////////////////////////////////////////////////////////////////
@@ -131,10 +166,12 @@ int main() {
 
 
     Simulation::Controller controller(camera, fileName);
+    //Begin FROM TUTORIAL
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     //allows drawing in glfw context whilst resizing
     glfwSetFramebufferSizeCallback(window, framebufferSizeCallback); 
     glfwSetCursorPosCallback(window, processMouseInput);
+    //End FROM TUTORIAL
 
     controller.startFlooding(controller.m_World.m_Ship.m_NodeList.at(controller.m_World.m_Ship.floodingNodeID));
     controller.placeStartingData();
@@ -143,9 +180,13 @@ int main() {
     while (!glfwWindowShouldClose(window) && !controller.m_SimulationEnded) {
         processInput(window, controller);
         controller.update();
+        //Begin FROM TUTORIAL
         glfwSwapBuffers(window);
         glfwPollEvents();
+        //END FROM TUTORIAL
     }
+    //Begin FROM TUTORIAL
     glfwTerminate();
+    //End  FROM TUTORIAL
     return 0;
 }

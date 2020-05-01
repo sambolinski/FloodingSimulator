@@ -4,8 +4,12 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <GLFW/glfw3.h>
 
-//Directly taken from LearnOpenGL and adapted
-//https://learnopengl.com/code_viewer_gh.php?code=includes/learnopengl/camera.h
+//#CONTRIBUTED CODE
+//url: https://learnopengl.com/code_viewer_gh.php?code=includes/learnopengl/camera.h
+//Author: Joey de Vries
+//Licensing: CC BY 4.0 license https://creativecommons.org/licenses/by/4.0/legalcode
+//Comment: Method taken directly from the tutorial
+//Begin
 class Camera {
 public:
     float m_Yaw = -90.0f;
@@ -29,4 +33,5 @@ public:
     glm::vec3 getCameraUp() { return m_CameraUp; }
     glm::vec2 getLastPosition() { return m_LastPosition; }
 };
+//End
 #endif

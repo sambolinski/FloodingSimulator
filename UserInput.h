@@ -2,6 +2,7 @@
 #define USERINPUT_H
 #include <GLFW/glfw3.h>
 #include "Graphics/Camera.h"
+// NOT USED -- OUTDATED
 class UserInput{
 public:
     bool m_FirstMouse = true;
